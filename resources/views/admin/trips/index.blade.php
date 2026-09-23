@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Manajemen Jadwal Keberangkatan - PO CAN Travel')
+@section('title', 'Manajemen Jadwal Keberangkatan — CAN Travel')
 @section('page_title', 'Kelola Jadwal / Trips')
 @section('page_subtitle', 'Pengaturan jadwal keberangkatan bus dan penetapan tarif tiket')
 

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <defs>
+    <linearGradient id="canGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0270c7"/>
+      <stop offset="50%" stop-color="#0e8ee9"/>
+      <stop offset="100%" stop-color="#38aaf6"/>
+    </linearGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#canGrad)"/>
+  <path d="M6 21C6 21.55 6.45 22 7 22H8M24 22H25C25.55 22 26 21.55 26 21M6 21V11C6 8.79 7.79 7 10 7H22C24.21 7 26 8.79 26 11V21M6 21H26" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+  <path d="M6 13H26" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
+  <circle cx="10" cy="18" r="1.8" fill="#ffffff"/>
+  <circle cx="22" cy="18" r="1.8" fill="#ffffff"/>
+</svg>

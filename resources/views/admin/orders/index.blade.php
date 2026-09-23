@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Manajemen Pesanan Tiket - PO CAN Travel')
+@section('title', 'Manajemen Pesanan Tiket — CAN Travel')
 @section('page_title', 'Kelola Pesanan Tiket')
 @section('page_subtitle', 'Monitor seluruh transaksi pemesanan tiket customer')
 

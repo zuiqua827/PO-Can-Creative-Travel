@@ -1,24 +1,47 @@
 @extends('layouts.app')
 
-@section('title', 'Konfirmasi Pemesanan Tiket - PO CAN Travel')
+@section('title', 'Data Penumpang & Konfirmasi Pesanan — CAN Travel')
+@section('meta_description', 'Lengkapi identitas penumpang dan konfirmasi pesanan tiket bus CAN Travel Anda dengan aman.')
 
 @section('content')
 <div class="bg-slate-50 py-10">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
+        <!-- Multi-Step Progress Tracker (Task 13) -->
+        <nav aria-label="Progress Pemesanan" class="mb-8">
+            <ol class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-bold">
+                <li class="p-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center space-x-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
+                    <span>01. Pilih Jadwal</span>
+                </li>
+                <li class="p-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center space-x-2">
+                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
+                    <span>02. Pilih Kursi</span>
+                </li>
+                <li class="p-3 rounded-2xl bg-brand-600 text-white shadow-md shadow-brand-600/25 flex items-center justify-center space-x-2" aria-current="step">
+                    <span class="w-5 h-5 rounded-full bg-white text-brand-600 flex items-center justify-center text-[10px]">03</span>
+                    <span>03. Data Penumpang</span>
+                </li>
+                <li class="p-3 rounded-2xl bg-white text-slate-400 border border-slate-200 flex items-center justify-center space-x-2">
+                    <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px]">04</span>
+                    <span>04. Pembayaran</span>
+                </li>
+            </ol>
+        </nav>
+
         <!-- Breadcrumb -->
-        <div class="flex items-center space-x-2 text-xs text-slate-500 mb-6">
-            <a href="{{ route('trips.show', $trip) }}" class="hover:text-brand-600 flex items-center">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex items-center space-x-2 text-xs text-slate-500 mb-4">
+            <a href="{{ route('trips.show', $trip) }}" class="hover:text-brand-600 flex items-center transition">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
                 Kembali ke Pemilihan Kursi
             </a>
             <span>/</span>
-            <span class="font-bold text-slate-800">Detail Penumpang & Checkout</span>
+            <span class="font-bold text-slate-800">Checkout Tiket</span>
         </div>
 
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight mb-8">Informasi Penumpang & Pembayaran</h1>
+        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-8">Informasi Penumpang & Checkout</h1>
 
         <form action="{{ route('booking.store', $trip) }}" method="POST">
             @csrf
@@ -32,8 +55,8 @@
                     <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
                         <div class="flex items-center justify-between pb-4 border-b border-slate-100">
                             <div>
-                                <span class="text-xs font-bold text-slate-400 uppercase">Jadwal Perjalanan</span>
-                                <h3 class="text-lg font-black text-slate-900">{{ $trip->route->origin }} → {{ $trip->route->destination }}</h3>
+                                <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Jadwal Perjalanan</span>
+                                <h2 class="text-lg font-black text-slate-900">{{ $trip->route->origin }} → {{ $trip->route->destination }}</h2>
                             </div>
                             <span class="px-3 py-1 rounded-full text-xs font-bold bg-brand-50 text-brand-700 border border-brand-200">
                                 {{ $trip->bus->type }}
@@ -41,21 +64,21 @@
                         </div>
                         <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4 text-xs">
                             <div>
-                                <span class="text-slate-400 block">Armada</span>
+                                <span class="text-slate-400 block font-medium">Armada Bus</span>
                                 <span class="font-bold text-slate-800">{{ $trip->bus->name }}</span>
                             </div>
                             <div>
-                                <span class="text-slate-400 block">Waktu Keberangkatan</span>
+                                <span class="text-slate-400 block font-medium">Waktu Berangkat</span>
                                 <span class="font-bold text-slate-800">{{ $trip->departure_at->format('H:i') }} WIB</span>
-                                <span class="text-slate-500 block">{{ $trip->departure_at->translatedFormat('d M Y') }}</span>
+                                <span class="text-slate-500 block text-[11px]">{{ $trip->departure_at->translatedFormat('d M Y') }}</span>
                             </div>
                             <div>
-                                <span class="text-slate-400 block">Titik Naik</span>
+                                <span class="text-slate-400 block font-medium">Titik Naik</span>
                                 <span class="font-bold text-slate-800">{{ $trip->boarding_point ?: $trip->route->origin }}</span>
                             </div>
                             <div>
-                                <span class="text-slate-400 block">Kursi Dipesan</span>
-                                <span class="font-bold text-emerald-600">{{ $seats->pluck('seat_number')->join(', ') }} ({{ $seats->count() }} Kursi)</span>
+                                <span class="text-slate-400 block font-medium">Kursi Dipilih</span>
+                                <span class="font-bold text-brand-600">{{ $seats->pluck('seat_number')->join(', ') }} ({{ $seats->count() }} Kursi)</span>
                             </div>
                         </div>
                     </div>
@@ -69,12 +92,12 @@
 
                             <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
                                 <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-8 h-8 rounded-xl bg-emerald-500 text-white font-black flex items-center justify-center text-xs shadow-md shadow-emerald-500/30">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-8 h-8 rounded-xl bg-brand-600 text-white font-black flex items-center justify-center text-xs shadow-md shadow-brand-600/30">
                                             {{ $seat->seat_number }}
                                         </div>
                                         <div>
-                                            <h4 class="text-sm font-bold text-slate-900">Penumpang Kursi {{ $seat->seat_number }}</h4>
+                                            <h3 class="text-sm font-bold text-slate-900">Penumpang Kursi {{ $seat->seat_number }}</h3>
                                             <span class="text-[11px] text-slate-500">Baris {{ $seat->row }} &bull; Sisi {{ $seat->column }}</span>
                                         </div>
                                     </div>
@@ -89,17 +112,23 @@
                                         <input type="text" name="passengers[{{ $seat->id }}][name]" required
                                             value="{{ old("passengers.{$seat->id}.name", $index === 0 ? auth()->user()->name : '') }}"
                                             class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                                            placeholder="Sesuai KTP/SIM/Paspor">
+                                            placeholder="Sesuai KTP / SIM / Paspor">
+                                        @error("passengers.{$seat->id}.name")
+                                            <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                                        @enderror
                                     </div>
 
                                     <div>
                                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-                                            Nomor WhatsApp / HP Aktif <span class="text-rose-500">*</span>
+                                            Nomor WhatsApp / HP <span class="text-rose-500">*</span>
                                         </label>
                                         <input type="tel" name="passengers[{{ $seat->id }}][phone]" required
                                             value="{{ old("passengers.{$seat->id}.phone", $index === 0 ? auth()->user()->phone : '') }}"
                                             class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
                                             placeholder="Contoh: 081234567890">
+                                        @error("passengers.{$seat->id}.phone")
+                                            <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                                        @enderror
                                     </div>
 
                                     <div class="sm:col-span-2">
@@ -109,7 +138,7 @@
                                         <input type="text" name="passengers[{{ $seat->id }}][id_number]"
                                             value="{{ old("passengers.{$seat->id}.id_number") }}"
                                             class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                                            placeholder="16 digit NIK untuk verifikasi saat boarding">
+                                            placeholder="Nomor identitas untuk verifikasi boarding">
                                     </div>
                                 </div>
                             </div>
@@ -165,12 +194,12 @@
 
                     <!-- Notes field -->
                     <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
-                            Catatan Khusus <span class="text-slate-400 font-normal">(Opsional)</span>
+                        <label for="booking-notes" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                            Catatan Perjalanan <span class="text-slate-400 font-normal">(Opsional)</span>
                         </label>
-                        <textarea name="notes" rows="2" 
+                        <textarea id="booking-notes" name="notes" rows="2" 
                             class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"
-                            placeholder="Contoh: Bawa bagasi koper besar atau mohon bantuan lansia saat boarding..."></textarea>
+                            placeholder="Contoh: Titik jemput khusus atau catatan bagasi..."></textarea>
                     </div>
 
                 </div>
@@ -178,7 +207,7 @@
                 <!-- Right Column: Order Summary & Checkout Trigger -->
                 <div class="lg:col-span-4 space-y-6">
                     <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-lg sticky top-24">
-                        <h3 class="text-lg font-black text-slate-900 mb-4 pb-3 border-b border-slate-100">Rincian Pembayaran</h3>
+                        <h2 class="text-lg font-black text-slate-900 mb-4 pb-3 border-b border-slate-100">Rincian Pembayaran</h2>
 
                         <div class="space-y-3 text-sm">
                             <div class="flex justify-between text-slate-600">
@@ -190,7 +219,7 @@
                                 <span class="font-bold text-emerald-600">GRATIS</span>
                             </div>
                             <div class="flex justify-between text-slate-600">
-                                <span>PPN 11%:</span>
+                                <span>Pajak & Retribusi:</span>
                                 <span class="text-slate-500">Termasuk</span>
                             </div>
 
@@ -203,16 +232,16 @@
                         </div>
 
                         <div class="mt-6 pt-4 border-t border-slate-100">
-                            <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-500 hover:to-emerald-600 text-white font-extrabold text-sm shadow-xl shadow-emerald-600/30 transition flex items-center justify-center space-x-2">
-                                <svg class="w-5 h-5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-extrabold text-sm shadow-xl shadow-brand-600/30 transition flex items-center justify-center space-x-2">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                 </svg>
-                                <span>Konfirmasi & Buat Pesanan</span>
+                                <span>Konfirmasi Pesanan</span>
                             </button>
                         </div>
 
                         <p class="mt-4 text-center text-[11px] text-slate-400">
-                            Dengan mengklik tombol di atas, Anda menyetujui Ketentuan Layanan & Kebijakan Bagasi PO CAN Travel.
+                            Dengan mengonfirmasi pesanan, Anda menyetujui Ketentuan Layanan & Kebijakan Bagasi CAN Travel.
                         </p>
                     </div>
                 </div>

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Jadwalkan Perjalanan Baru - PO CAN Travel')
+@section('title', 'Jadwalkan Perjalanan Baru — CAN Travel')
 @section('page_title', 'Jadwalkan Perjalanan Baru')
 @section('page_subtitle', 'Tugaskan armada bus dan tentukan waktu keberangkatan')
 

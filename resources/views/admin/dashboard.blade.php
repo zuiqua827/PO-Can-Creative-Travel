@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Admin Dashboard - PO CAN Travel')
+@section('title', 'Admin Dashboard — CAN Travel')
 @section('page_title', 'Dashboard Operasional')
-@section('page_subtitle', 'Ringkasan performa pemesanan dan armada bus')
+@section('page_subtitle', 'Ringkasan performa pemesanan dan armada bus CAN Travel')
 
 @section('content')
 <div class="space-y-8">

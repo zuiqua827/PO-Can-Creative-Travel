@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Tambah Rute Baru - PO CAN Travel')
+@section('title', 'Tambah Rute Baru — CAN Travel')
 @section('page_title', 'Tambah Rute Perjalanan')
 @section('page_subtitle', 'Tentukan kota keberangkatan, tujuan, estimasi jarak dan tarif dasar')
 

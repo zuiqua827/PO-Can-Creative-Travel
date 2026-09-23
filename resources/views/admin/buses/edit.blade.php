@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Armada Bus - ' . $bus->name . ' - PO CAN Travel')
+@section('title', 'Edit Armada Bus ' . $bus->name . ' — CAN Travel')
 @section('page_title', 'Edit Armada Bus')
 @section('page_subtitle', 'Perbarui informasi armada ' . $bus->name)
 

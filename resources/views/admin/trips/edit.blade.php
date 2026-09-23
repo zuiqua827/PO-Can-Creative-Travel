@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Jadwal Perjalanan - PO CAN Travel')
+@section('title', 'Edit Jadwal Perjalanan — CAN Travel')
 @section('page_title', 'Edit Jadwal Perjalanan')
 @section('page_subtitle', 'Perbarui waktu atau armada untuk ' . $trip->trip_code)
 

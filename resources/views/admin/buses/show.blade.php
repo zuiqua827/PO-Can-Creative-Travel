@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Peta Kursi Bus - ' . $bus->name . ' - PO CAN Travel')
+@section('title', 'Peta Kursi Bus ' . $bus->name . ' — CAN Travel')
 @section('page_title', 'Peta & Status Kursi: ' . $bus->name)
 @section('page_subtitle', 'Konfigurasi visual kursi dan status ketersediaan')
 

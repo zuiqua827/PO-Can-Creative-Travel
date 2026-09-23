@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Daftar Pelanggan - PO CAN Travel')
+@section('title', 'Daftar Pelanggan — CAN Travel')
 @section('page_title', 'Daftar Pelanggan')
-@section('page_subtitle', 'Pengguna terdaftar dengan riwayat pemesanan tiket bus')
+@section('page_subtitle', 'Pengguna terdaftar dengan riwayat pemesanan tiket bus CAN Travel')
 
 @section('content')
 <div class="space-y-6">

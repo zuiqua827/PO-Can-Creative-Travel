@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Pesanan & E-Tiket Saya - PO CAN Travel')
+@section('title', 'Pesanan Saya — CAN Travel')
+@section('meta_description', 'Kelola riwayat pesanan tiket dan unduh e-tiket resmi perjalanan bus CAN Travel Anda.')
 
 @section('content')
 <div class="bg-slate-50 py-10">
@@ -9,11 +10,11 @@
         <!-- Header -->
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pb-6 border-b border-slate-200 gap-4 mb-6">
             <div>
-                <h1 class="text-3xl font-black text-slate-900 tracking-tight">Riwayat Tiket & Pesanan</h1>
-                <p class="text-xs text-slate-500 mt-1">Kelola tiket perjalanan bus dan unduh e-tiket resmi Anda di sini.</p>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Pesanan Saya</h1>
+                <p class="text-xs text-slate-500 mt-1">Kelola tiket perjalanan bus dan akses e-tiket resmi CAN Travel Anda di sini.</p>
             </div>
-            <a href="{{ route('trips.index') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs shadow-md transition">
-                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <a href="{{ route('trips.index') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                 </svg>
                 Pesan Tiket Baru
@@ -53,17 +54,12 @@
                             <span class="font-mono text-xs font-bold text-slate-800 bg-slate-100 px-3 py-1 rounded-lg">
                                 {{ $order->order_code }}
                             </span>
-                            <span class="text-xs text-slate-400">Dipesan pada {{ $order->created_at->translatedFormat('d M Y, H:i') }}</span>
+                            <span class="text-xs text-slate-400">Dipesan {{ $order->created_at->translatedFormat('d M Y, H:i') }} WIB</span>
                         </div>
                         
                         <div class="flex items-center space-x-2">
-                            <!-- Status badge -->
-                            <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $order->status_badge }}">
-                                {{ ucfirst($order->status) }}
-                            </span>
-                            <span class="px-3 py-1 rounded-full text-xs font-bold border {{ $order->payment_status_badge }}">
-                                {{ $order->payment_status === 'paid' ? 'Lunas' : ($order->payment_status === 'unpaid' ? 'Belum Bayar' : ucfirst($order->payment_status)) }}
-                            </span>
+                            <x-status-badge :status="$order->status" type="order" />
+                            <x-status-badge :status="$order->payment_status" type="payment" />
                         </div>
                     </div>
 
@@ -71,9 +67,9 @@
                     <div class="py-5 grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
                         <div class="md:col-span-5 space-y-1">
                             <span class="text-[10px] font-bold uppercase text-brand-600 tracking-wider">{{ $order->trip->bus->type }} &bull; {{ $order->trip->bus->name }}</span>
-                            <h3 class="text-lg font-black text-slate-900">
+                            <h2 class="text-lg font-black text-slate-900">
                                 {{ $order->trip->route->origin }} → {{ $order->trip->route->destination }}
-                            </h3>
+                            </h2>
                             <p class="text-xs text-slate-500">
                                 Keberangkatan: <strong>{{ $order->trip->departure_at->translatedFormat('l, d M Y, H:i') }} WIB</strong>
                             </p>
@@ -81,8 +77,8 @@
 
                         <div class="md:col-span-4 space-y-1 text-xs text-slate-600">
                             <div>
-                                <span class="text-slate-400">Kursi Dipesan:</span> 
-                                <strong class="text-emerald-700 font-bold">
+                                <span class="text-slate-400">Nomor Kursi:</span> 
+                                <strong class="text-brand-700 font-bold">
                                     {{ $order->orderItems->map(fn($item) => $item->busSeat->seat_number)->join(', ') }}
                                     ({{ $order->orderItems->count() }} Penumpang)
                                 </strong>
@@ -94,7 +90,7 @@
                         </div>
 
                         <div class="md:col-span-3 text-right">
-                            <span class="text-xs text-slate-400 block">Total Pembayaran</span>
+                            <span class="text-[11px] text-slate-400 block font-medium">Total Pembayaran</span>
                             <span class="text-xl font-black text-slate-900">{{ $order->formatted_total }}</span>
                         </div>
                     </div>
@@ -122,8 +118,8 @@
                             @endif
 
                             <a href="{{ route('orders.show', $order) }}" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-brand-600 text-white transition flex items-center space-x-1.5">
-                                <span>Lihat E-Tiket</span>
-                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <span>Lihat Detail</span>
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>
                             </a>
@@ -133,15 +129,15 @@
             @empty
                 <div class="text-center py-16 bg-white rounded-3xl border border-slate-200 p-8">
                     <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-4">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
                         </svg>
                     </div>
-                    <h3 class="text-lg font-bold text-slate-800">Belum ada pesanan pada filter ini</h3>
+                    <h2 class="text-lg font-bold text-slate-800">Belum ada pesanan.</h2>
                     <p class="text-sm text-slate-500 max-w-sm mx-auto mt-1 mb-6">
-                        Anda belum memiliki riwayat pesanan tiket dengan kriteria ini. Mulai cari jadwal bus sekarang!
+                        Anda belum memiliki riwayat pemesanan tiket bus. Cari jadwal perjalanan sekarang!
                     </p>
-                    <a href="{{ route('trips.index') }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-500 transition">
+                    <a href="{{ route('trips.index') }}" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition">
                         Cari Tiket Bus
                     </a>
                 </div>

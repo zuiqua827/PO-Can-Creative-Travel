@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Edit Rute - PO CAN Travel')
+@section('title', 'Edit Rute — CAN Travel')
 @section('page_title', 'Edit Rute Perjalanan')
 @section('page_subtitle', 'Perbarui detail rute ' . $route->origin . ' → ' . $route->destination)
 

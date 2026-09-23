@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '404 - Halaman Tidak Ditemukan - PO CAN Travel')
+@section('title', '404 — Halaman Tidak Ditemukan — CAN Travel')
 
 @section('content')
 <div class="min-h-[70vh] flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
@@ -11,7 +11,7 @@
         <div>
             <h1 class="text-2xl font-black text-slate-900 tracking-tight">Halaman Tidak Ditemukan</h1>
             <p class="mt-2 text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Halaman yang Anda cari mungkin sudah dipindahkan, dihapus, atau alamat URL yang Anda masukkan tidak tersedia.
+                Halaman yang Anda cari mungkin sudah dipindahkan, dihapus, atau alamat URL yang Anda tuju tidak tersedia.
             </p>
         </div>
         <div class="pt-2">

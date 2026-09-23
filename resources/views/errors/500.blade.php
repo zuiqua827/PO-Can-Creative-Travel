@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', '500 - Terjadi Kesalahan - PO CAN Travel')
+@section('title', '500 — Terjadi Kesalahan — CAN Travel')
 
 @section('content')
 <div class="min-h-[70vh] flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8">
@@ -9,9 +9,9 @@
             500
         </div>
         <div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Terjadi Kesalahan Sistem</h1>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Terjadi Kesalahan</h1>
             <p class="mt-2 text-xs sm:text-sm text-slate-500 leading-relaxed">
-                Maaf, sedang terjadi kendala pada server kami. Tim teknis kami telah diberitahu dan sedang menanganinya.
+                Mohon maaf, terjadi kendala teknis pada server kami. Tim kami sedang menanganinya. Silakan coba beberapa saat lagi.
             </p>
         </div>
         <div class="pt-2">

@@ -1,8 +1,8 @@
 @extends('layouts.admin')
 
-@section('title', 'Manajemen Armada Bus - PO CAN Travel')
+@section('title', 'Manajemen Armada Bus — CAN Travel')
 @section('page_title', 'Kelola Armada Bus')
-@section('page_subtitle', 'Daftar bus dan tata letak konfigurasi kursi')
+@section('page_subtitle', 'Daftar bus dan tata letak konfigurasi kursi CAN Travel')
 
 @section('content')
 <div class="space-y-6">

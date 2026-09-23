@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Detail Pesanan ' . $order->order_code . ' - PO CAN Travel')
+@section('title', 'Detail Pesanan ' . $order->order_code . ' — CAN Travel')
 @section('page_title', 'Detail Pesanan: ' . $order->order_code)
 @section('page_subtitle', 'Tinjau rincian tiket, manifest penumpang, dan perbarui status')
 

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Tambah Armada Bus Baru - PO CAN Travel')
+@section('title', 'Tambah Armada Bus Baru — CAN Travel')
 @section('page_title', 'Tambah Armada Bus')
 @section('page_subtitle', 'Masukkan data spesifikasi bus dan kapasitas')
 

@@ -1,31 +1,30 @@
 @extends('layouts.app')
 
-@section('title', 'Masuk Akun - PO CAN Travel')
+@section('title', 'Masuk Akun — CAN Travel')
+@section('meta_description', 'Masuk ke akun CAN Travel Anda untuk memesan tiket bus dan mengelola e-tiket perjalanan.')
 
 @section('content')
 <div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-slate-100">
         
-        <!-- Header -->
+        <!-- Header with CAN Travel Brand -->
         <div class="text-center">
-            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                </svg>
+            <div class="flex justify-center mb-4">
+                <x-logo size="lg" variant="dark" />
             </div>
-            <h2 class="mt-4 text-2xl font-extrabold text-slate-900 tracking-tight">Selamat Datang Kembali</h2>
-            <p class="mt-1 text-sm text-slate-500">Masuk ke akun Anda untuk memesan tiket dan melihat riwayat perjalanan.</p>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Selamat Datang Kembali</h1>
+            <p class="mt-1 text-xs text-slate-500">Masuk ke akun Anda untuk memesan tiket dan melihat e-tiket.</p>
         </div>
 
-        <!-- Quick Demo Login Helpers -->
+        <!-- Quick 1-Click Test Access -->
         <div class="bg-brand-50/70 border border-brand-100 rounded-2xl p-4">
-            <p class="text-xs font-bold text-brand-800 uppercase tracking-wider mb-2 flex items-center">
+            <p class="text-[11px] font-bold text-brand-800 uppercase tracking-wider mb-2 flex items-center">
                 <span class="w-2 h-2 rounded-full bg-brand-500 mr-2 animate-pulse"></span>
                 Akses Cepat Pengujian (1-Click Demo)
             </p>
             <div class="grid grid-cols-2 gap-2">
                 <button type="button" onclick="fillDemo('admin@pocan.com', 'password')" class="text-left px-3 py-2 rounded-xl bg-white border border-brand-200 hover:border-brand-400 text-xs font-semibold text-slate-700 hover:text-brand-700 transition shadow-sm">
-                    <div class="font-bold text-brand-600">Admin PO CAN</div>
+                    <div class="font-bold text-brand-600">Admin CAN Travel</div>
                     <div class="text-[10px] text-slate-500">admin@pocan.com</div>
                 </button>
                 <button type="button" onclick="fillDemo('budi@gmail.com', 'password')" class="text-left px-3 py-2 rounded-xl bg-white border border-brand-200 hover:border-brand-400 text-xs font-semibold text-slate-700 hover:text-brand-700 transition shadow-sm">
@@ -67,7 +66,7 @@
             </div>
 
             <div>
-                <button type="submit" class="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 shadow-lg shadow-brand-600/30 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                <button type="submit" class="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 shadow-lg shadow-brand-600/30 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
                     Masuk ke Akun
                 </button>
             </div>
@@ -77,7 +76,7 @@
             <p class="text-xs text-slate-500">
                 Belum memiliki akun? 
                 <a href="{{ route('register') }}" class="font-bold text-brand-600 hover:text-brand-700 hover:underline">
-                    Daftar akun baru sekarang
+                    Daftar sekarang
                 </a>
             </p>
         </div>

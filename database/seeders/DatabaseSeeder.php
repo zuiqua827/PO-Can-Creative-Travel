@@ -23,7 +23,7 @@ class DatabaseSeeder extends Seeder
         $admin = User::firstOrCreate(
             ['email' => 'admin@pocan.com'],
             [
-                'name' => 'Administrator PO CAN',
+                'name' => 'Administrator CAN Travel',
                 'phone' => '081234567890',
                 'role' => 'admin',
                 'password' => Hash::make('password'),
@@ -68,7 +68,7 @@ class DatabaseSeeder extends Seeder
                 'type' => 'Royal Suite',
                 'seat_capacity' => 24,
                 'facilities' => ['AC Dingin', 'WiFi Cepat', 'Reclining Seat 150°', 'Legrest Ergonomis', 'Audio Video on Demand (AVOD)', 'USB Type-C & A Fast Charger', 'Toilet Bersih', 'Snack & Air Mineral', 'Bantal & Selimut Lembut'],
-                'description' => 'Armada flagship termewah dari PO CAN Travel dengan konfigurasi kursi 2-2 legrest ekstra luas, AVOD tiap kursi, dan layanan kru bintang lima.',
+                'description' => 'Armada flagship termewah dari CAN Travel dengan konfigurasi kursi 2-2 legrest ekstra luas, AVOD tiap kursi, dan layanan kru bintang lima.',
                 'status' => 'active',
             ],
             [

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Manajemen Rute Perjalanan - PO CAN Travel')
+@section('title', 'Manajemen Rute Perjalanan — CAN Travel')
 @section('page_title', 'Kelola Rute Perjalanan')
 @section('page_subtitle', 'Daftar rute asal, tujuan, jarak, dan tarif dasar')
 

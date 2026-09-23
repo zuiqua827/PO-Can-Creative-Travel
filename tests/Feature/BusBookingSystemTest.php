@@ -123,10 +123,12 @@ class BusBookingSystemTest extends TestCase
     {
         $responseHome = $this->get('/');
         $responseHome->assertStatus(200);
-        $responseHome->assertSee('PO CAN Travel');
+        $responseHome->assertSee('CAN Travel');
+        $responseHome->assertDontSee('PO CAN Travel');
 
         $responseTrips = $this->get('/trips');
         $responseTrips->assertStatus(200);
+        $responseTrips->assertSee('CAN Travel');
     }
 
     /**
@@ -201,7 +203,7 @@ class BusBookingSystemTest extends TestCase
     public function test_order_creation_calculates_price_server_side(): void
     {
         $trip = Trip::with('bus.busSeats')->where('status', 'scheduled')->first();
-        $customer = User::where('role', 'customer')->first();
+        $customer = User::factory()->create(['role' => 'customer']);
 
         $bookedIds = $trip->getBookedSeatIds();
         $availableSeats = $trip->bus->busSeats->whereNotIn('id', $bookedIds)->take(2);

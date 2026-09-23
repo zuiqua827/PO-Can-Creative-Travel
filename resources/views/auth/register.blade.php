@@ -1,20 +1,19 @@
 @extends('layouts.app')
 
-@section('title', 'Daftar Akun Baru - PO CAN Travel')
+@section('title', 'Daftar Akun Baru — CAN Travel')
+@section('meta_description', 'Buat akun pelanggan CAN Travel untuk memesan tiket bus online dengan mudah, cepat, dan aman.')
 
 @section('content')
 <div class="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-slate-100">
         
-        <!-- Header -->
+        <!-- Header with Brand Logo -->
         <div class="text-center">
-            <div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-tr from-brand-700 to-brand-500 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
-                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
-                </svg>
+            <div class="flex justify-center mb-4">
+                <x-logo size="lg" variant="dark" />
             </div>
-            <h2 class="mt-4 text-2xl font-extrabold text-slate-900 tracking-tight">Buat Akun Penumpang</h2>
-            <p class="mt-1 text-sm text-slate-500">Daftar sekarang untuk kemudahan pemesanan tiket dan e-ticket instan.</p>
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Daftar Akun Baru</h1>
+            <p class="mt-1 text-xs text-slate-500">Daftar sekarang untuk kemudahan reservasi tiket dan e-tiket instan.</p>
         </div>
 
         <!-- Register Form -->
@@ -65,11 +64,11 @@
                 <label for="password_confirmation" class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">Ulangi Kata Sandi</label>
                 <input id="password_confirmation" name="password_confirmation" type="password" required 
                     class="block w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent text-sm transition"
-                    placeholder="Ulangi kata sandi">
+                    placeholder="Ulangi kata sandi baru">
             </div>
 
             <div class="pt-2">
-                <button type="submit" class="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-500 hover:to-brand-600 shadow-lg shadow-brand-600/30 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                <button type="submit" class="w-full flex justify-center py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 shadow-lg shadow-brand-600/30 transition focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
                     Daftar Sekarang
                 </button>
             </div>
