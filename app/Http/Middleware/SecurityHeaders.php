@@ -28,9 +28,9 @@ class SecurityHeaders
         // Restrict sensitive browser permissions
         $response->headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
 
-        // Robust, Vite/Tailwind-compatible Content Security Policy
+        // Robust, Vite/Tailwind-compatible Content Security Policy without unsafe-eval
         $csp = "default-src 'self'; "
-            ."script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; "
+            ."script-src 'self' 'unsafe-inline' https:; "
             ."style-src 'self' 'unsafe-inline' https:; "
             ."font-src 'self' data: https:; "
             ."img-src 'self' data: https: blob:; "

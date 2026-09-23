@@ -5,21 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\Bus;
 use App\Models\Route;
 use App\Models\Trip;
+use Illuminate\Support\Facades\Cache;
 
 class HomeController extends Controller
 {
     public function index()
     {
-        // Distinct origins and destinations for the search dropdowns
-        $origins = Route::where('status', 'active')
-            ->distinct()
-            ->pluck('origin')
-            ->toArray();
+        // Safe caching for static route metadata (1 hour)
+        $origins = Cache::remember('home_route_origins', 3600, function () {
+            return Route::where('status', 'active')
+                ->distinct()
+                ->pluck('origin')
+                ->toArray();
+        });
 
-        $destinations = Route::where('status', 'active')
-            ->distinct()
-            ->pluck('destination')
-            ->toArray();
+        $destinations = Cache::remember('home_route_destinations', 3600, function () {
+            return Route::where('status', 'active')
+                ->distinct()
+                ->pluck('destination')
+                ->toArray();
+        });
 
         // Featured luxury buses
         $buses = Bus::where('status', 'active')->take(4)->get();

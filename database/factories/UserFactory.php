@@ -20,7 +20,7 @@ class UserFactory extends Factory
     {
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => fake()->unique()->userName().'_'.uniqid().'@example.com',
             'phone' => '08'.fake()->numerify('##########'),
             'role' => 'customer',
             'email_verified_at' => now(),

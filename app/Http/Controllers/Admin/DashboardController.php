@@ -103,6 +103,30 @@ class DashboardController extends Controller
             ->orderBy('departure_at', 'asc')
             ->get();
 
+        // 7-Day Daily Revenue & Booking Trends (Authoritative SQL Data)
+        $dailyTrends = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::today()->subDays($i);
+            $dateKey = $date->format('Y-m-d');
+            $dayLabel = $date->format('D, d M');
+
+            $dayRevenue = (float) Order::where('payment_status', 'paid')
+                ->whereDate('created_at', $dateKey)
+                ->sum('total_amount');
+
+            $dayBookings = Order::whereDate('created_at', $dateKey)->count();
+
+            $dailyTrends[] = [
+                'date' => $dateKey,
+                'label' => $dayLabel,
+                'revenue' => $dayRevenue,
+                'bookings' => $dayBookings,
+            ];
+        }
+
+        $maxDailyRevenue = max(1, ...array_column($dailyTrends, 'revenue'));
+        $maxDailyBookings = max(1, ...array_column($dailyTrends, 'bookings'));
+
         return view('admin.dashboard', compact(
             'period',
             'totalRevenue',
@@ -121,7 +145,10 @@ class DashboardController extends Controller
             'totalBooked',
             'topRoutes',
             'recentOrders',
-            'todayDepartures'
+            'todayDepartures',
+            'dailyTrends',
+            'maxDailyRevenue',
+            'maxDailyBookings'
         ));
     }
 }

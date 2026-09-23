@@ -175,8 +175,15 @@ class BookingController extends Controller
             try {
                 $user->notify(new BookingCreatedNotification($order));
             } catch (\Throwable $e) {
-                Log::error("Failed to notify user for booking {$order->order_code}: ".$e->getMessage());
+                Log::channel('booking')->error("Failed to notify user for booking {$order->order_code}: ".$e->getMessage());
             }
+
+            Log::channel('booking')->info("Booking created successfully: {$order->order_code}", [
+                'user_id' => $user->id,
+                'trip_id' => $trip->id,
+                'seats_count' => count($seatIds),
+                'total_amount' => $order->total_amount,
+            ]);
 
             return redirect()->route('booking.payment', $order)
                 ->with('success', 'Pesanan berhasil dibuat! Silakan selesaikan pembayaran.');
@@ -220,6 +227,14 @@ class BookingController extends Controller
     {
         $this->authorize('view', $order);
 
+        // Validate upload security (MIME, max size 2MB)
+        $request->validate([
+            'payment_proof' => ['nullable', 'file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:2048'],
+        ], [
+            'payment_proof.mimes' => 'Bukti pembayaran harus berupa gambar (JPG, PNG, WEBP) atau PDF.',
+            'payment_proof.max' => 'Ukuran berkas bukti pembayaran maksimal 2 MB.',
+        ]);
+
         // 1. Safe Idempotency: If already paid, redirect without modifying
         if ($order->payment_status === 'paid' || $order->status === 'confirmed') {
             return redirect()->route('orders.show', $order)
@@ -248,10 +263,13 @@ class BookingController extends Controller
                 ->with('error', 'Batas waktu pembayaran pesanan ini telah habis (Kedaluwarsa). Kursi telah dilepaskan kembali.');
         }
 
-        // Handle proof upload if provided
+        // Handle secure proof upload if provided
         $proofPath = null;
         if ($request->hasFile('payment_proof')) {
-            $proofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
+            $proofFile = $request->file('payment_proof');
+            $extension = $proofFile->getClientOriginalExtension() ?: 'png';
+            $safeFileName = Str::random(40).'.'.strtolower($extension);
+            $proofPath = $proofFile->storeAs('payment_proofs', $safeFileName, 'public');
         }
 
         // Delegate to PaymentGatewayInterface
@@ -273,6 +291,8 @@ class BookingController extends Controller
                 }
             });
 
+            Log::channel('payments')->warning("Payment marked expired for order: {$order->order_code}");
+
             return redirect()->route('orders.show', $order)
                 ->with('error', $paymentResult->getMessage() ?: 'Batas waktu pembayaran pesanan ini telah habis (Kedaluwarsa). Kursi telah dilepaskan kembali.');
         }
@@ -286,6 +306,8 @@ class BookingController extends Controller
                     ]);
                 }
             });
+
+            Log::channel('payments')->warning("Payment failed for order: {$order->order_code}");
 
             return redirect()->route('booking.payment', $order)
                 ->with('error', $paymentResult->getMessage() ?: 'Pembayaran gagal diproses. Silakan coba kembali.');
@@ -321,11 +343,16 @@ class BookingController extends Controller
             ]);
         });
 
+        Log::channel('payments')->info("Payment processed successfully for order: {$order->order_code}", [
+            'amount' => $order->total_amount,
+            'transaction_id' => $paymentResult->getTransactionId(),
+        ]);
+
         // Dispatch customer payment notification
         try {
             $order->user?->notify(new PaymentReceivedNotification($order));
         } catch (\Throwable $e) {
-            Log::error("Failed to notify user for payment {$order->order_code}: ".$e->getMessage());
+            Log::channel('payments')->error("Failed to notify user for payment {$order->order_code}: ".$e->getMessage());
         }
 
         return redirect()->route('orders.show', $order)

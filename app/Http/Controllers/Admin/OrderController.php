@@ -8,6 +8,7 @@ use App\Models\Order;
 use App\Models\Route as BusRoute;
 use App\Notifications\BookingCancelledNotification;
 use App\Notifications\PaymentReceivedNotification;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -34,6 +35,13 @@ class OrderController extends Controller
                     })
                     ->orWhereHas('orderItems', function ($sub) use ($search) {
                         $sub->where('passenger_name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('payment', function ($sub) use ($search) {
+                        $sub->where('payment_reference', 'like', "%{$search}%")
+                            ->orWhere('provider_transaction_id', 'like', "%{$search}%");
+                        if (is_numeric($search)) {
+                            $sub->orWhere('id', (int) $search);
+                        }
                     });
             });
         }
@@ -93,6 +101,13 @@ class OrderController extends Controller
             'admin_id' => auth()->id(),
             'filters' => $request->all(),
         ]);
+
+        AuditLogger::log(
+            action: 'orders_csv_exported',
+            targetType: 'order',
+            targetId: null,
+            metadata: ['filters' => $request->all()]
+        );
 
         $query = $this->buildFilteredQuery($request);
 
@@ -168,7 +183,10 @@ class OrderController extends Controller
             return back()->with('error', "Perubahan status pesanan dari '{$order->status}' ke '{$validated['status']}' tidak diizinkan oleh sistem.");
         }
 
-        DB::transaction(function () use ($order, $validated) {
+        $oldStatus = $order->status;
+        $oldPaymentStatus = $order->payment_status;
+
+        DB::transaction(function () use ($order, $validated, $oldStatus, $oldPaymentStatus) {
             $order->update($validated);
 
             if ($order->payment) {
@@ -184,7 +202,20 @@ class OrderController extends Controller
                 ]);
             }
 
-            Log::info("Admin updated order status for {$order->order_code} to {$validated['status']} [Payment: {$validated['payment_status']}]");
+            AuditLogger::log(
+                action: 'order_status_updated',
+                targetType: 'order',
+                targetId: $order->id,
+                metadata: [
+                    'order_code' => $order->order_code,
+                    'old_status' => $oldStatus,
+                    'new_status' => $validated['status'],
+                    'old_payment_status' => $oldPaymentStatus,
+                    'new_payment_status' => $validated['payment_status'],
+                ]
+            );
+
+            Log::channel('payments')->info("Admin updated order status for {$order->order_code} to {$validated['status']} [Payment: {$validated['payment_status']}]");
         });
 
         // Trigger notifications on status transitions

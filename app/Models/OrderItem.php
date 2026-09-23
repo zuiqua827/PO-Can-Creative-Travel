@@ -29,7 +29,7 @@ class OrderItem extends Model
     {
         static::creating(function (OrderItem $item) {
             if (empty($item->ticket_token)) {
-                $item->ticket_token = 'TKT-'.date('Y').'-'.strtoupper(Str::random(10));
+                $item->ticket_token = 'TKT-'.date('Y').'-'.strtoupper(Str::random(24));
             }
         });
     }

@@ -116,6 +116,79 @@
 
     </div>
 
+    <!-- 7-Day Operational Trends Section (Pure CSS/SVG, 100% Database-Driven) -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 7-Day Revenue Trend -->
+        <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Tren Pendapatan Harian (7 Hari)</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Total nominal transaksi lunas per hari</p>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700">
+                    Realtime SQL
+                </span>
+            </div>
+
+            <div class="grid grid-cols-7 gap-2 items-end h-44 pt-4 border-b border-slate-100">
+                @foreach($dailyTrends as $trend)
+                    @php
+                        $heightPct = $maxDailyRevenue > 0 ? max(8, round(($trend['revenue'] / $maxDailyRevenue) * 100)) : 8;
+                    @endphp
+                    <div class="flex flex-col items-center h-full justify-end group relative">
+                        <!-- Tooltip -->
+                        <div class="absolute -top-10 opacity-0 group-hover:opacity-100 transition duration-150 bg-slate-900 text-white text-[10px] font-bold py-1 px-2 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-md">
+                            Rp {{ number_format($trend['revenue'], 0, ',', '.') }}
+                        </div>
+                        <div class="w-full max-w-[36px] bg-slate-100 group-hover:bg-emerald-100 rounded-t-xl overflow-hidden flex flex-col justify-end transition h-full">
+                            <div class="bg-gradient-to-t from-emerald-600 to-emerald-400 rounded-t-xl w-full transition-all duration-300" style="height: {{ $heightPct }}%"></div>
+                        </div>
+                        <span class="text-[10px] font-semibold text-slate-500 mt-2 truncate w-full text-center">{{ $trend['label'] }}</span>
+                    </div>
+                @endforeach
+            </div>
+            <div class="flex justify-between items-center mt-3 text-[11px] text-slate-500 font-medium">
+                <span>Rata-rata: Rp {{ number_format(collect($dailyTrends)->avg('revenue'), 0, ',', '.') }} / hari</span>
+                <span class="text-emerald-600 font-bold">Puncak: Rp {{ number_format($maxDailyRevenue, 0, ',', '.') }}</span>
+            </div>
+        </div>
+
+        <!-- 7-Day Booking Volume Trend -->
+        <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-base font-black text-slate-900">Tren Volume Pemesanan (7 Hari)</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Jumlah pesanan tiket yang masuk per hari</p>
+                </div>
+                <span class="inline-flex items-center px-2.5 py-1 rounded-xl text-xs font-bold bg-brand-50 text-brand-700">
+                    Volume
+                </span>
+            </div>
+
+            <div class="grid grid-cols-7 gap-2 items-end h-44 pt-4 border-b border-slate-100">
+                @foreach($dailyTrends as $trend)
+                    @php
+                        $heightPct = $maxDailyBookings > 0 ? max(8, round(($trend['bookings'] / $maxDailyBookings) * 100)) : 8;
+                    @endphp
+                    <div class="flex flex-col items-center h-full justify-end group relative">
+                        <!-- Tooltip -->
+                        <div class="absolute -top-10 opacity-0 group-hover:opacity-100 transition duration-150 bg-slate-900 text-white text-[10px] font-bold py-1 px-2 rounded-lg pointer-events-none whitespace-nowrap z-20 shadow-md">
+                            {{ $trend['bookings'] }} Tiket
+                        </div>
+                        <div class="w-full max-w-[36px] bg-slate-100 group-hover:bg-brand-100 rounded-t-xl overflow-hidden flex flex-col justify-end transition h-full">
+                            <div class="bg-gradient-to-t from-brand-600 to-brand-400 rounded-t-xl w-full transition-all duration-300" style="height: {{ $heightPct }}%"></div>
+                        </div>
+                        <span class="text-[10px] font-semibold text-slate-500 mt-2 truncate w-full text-center">{{ $trend['label'] }}</span>
+                    </div>
+                @endforeach
+            </div>
+            <div class="flex justify-between items-center mt-3 text-[11px] text-slate-500 font-medium">
+                <span>Total 7 Hari: {{ collect($dailyTrends)->sum('bookings') }} Pesanan</span>
+                <span class="text-brand-600 font-bold">Tertinggi: {{ $maxDailyBookings }} Pesanan/hari</span>
+            </div>
+        </div>
+    </div>
+
     <!-- 2-Column Analytics: Departures Today & Top Routes -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 

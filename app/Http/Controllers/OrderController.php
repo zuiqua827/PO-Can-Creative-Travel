@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Notifications\BookingCancelledNotification;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -85,7 +86,17 @@ class OrderController extends Controller
                 $order->payment->update(['status' => 'failed']);
             }
 
-            Log::info("Order cancelled by customer: {$order->order_code} (User ID: {$order->user_id})");
+            AuditLogger::log(
+                action: 'order_cancelled_by_customer',
+                targetType: 'order',
+                targetId: $order->id,
+                metadata: [
+                    'order_code' => $order->order_code,
+                    'user_id' => $order->user_id,
+                ]
+            );
+
+            Log::channel('payments')->info("Order cancelled by customer: {$order->order_code} (User ID: {$order->user_id})");
         });
 
         try {

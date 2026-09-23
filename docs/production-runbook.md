@@ -1,0 +1,371 @@
+# CAN Travel — Production Operational Runbook
+
+Dokumen ini merupakan panduan operasional teknis resmi (*operational runbook*) untuk sistem **CAN Travel** pada lingkungan *production*. Panduan ini dirancang untuk tim DevOps, SysAdmin, dan Backend Engineer dalam mengelola *deployment*, pemeliharaan (*maintenance*), pemulihan bencana (*disaster recovery*), serta penanganan insiden operasional.
+
+---
+
+## 1. Production Deployment Procedure
+
+Deployment aplikasi CAN Travel dirancang agar aman, *zero-downtime*, dan dapat diulang (*reproducible*).
+
+### Alur Rilis Produksi (Standard Deployment Flow)
+
+```bash
+# 1. Masuk ke direktori aplikasi
+cd /var/www/cantravel
+
+# 2. Aktifkan Maintenance Mode dengan secret bypass (opsional, disarankan jika ada migrasi besar)
+php artisan down --secret="can-travel-ops-bypass-2026" --render="errors::503"
+
+# 3. Tarik versi terbaru dari repositori branch main/production
+git fetch origin
+git checkout main
+git pull origin main
+
+# 4. Pasang dependensi PHP tanpa dev-dependencies
+composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+
+# 5. Pasang dependensi frontend dan bangun aset produksi
+npm ci
+npm run build
+
+# 6. Jalankan migrasi database (hanya migrasi aditif/non-destruktif)
+php artisan migrate --force
+
+# 7. Bersihkan dan kompilasi ulang seluruh cache Laravel
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+
+# 8. Restart queue worker agar memuat kode aplikasi terbaru
+php artisan queue:restart
+
+# 9. Nonaktifkan Maintenance Mode
+php artisan up
+```
+
+---
+
+## 2. Database Migration Rules & Safety
+
+### Prinsip Utama Database CAN Travel
+1. **DILARANG KERAS** menjalankan perintah destruktif:
+   - `php artisan migrate:fresh`
+   - `php artisan migrate:reset`
+   - `php artisan db:wipe`
+   - Menghapus tabel atau kolom produksi yang sedang digunakan.
+2. Seluruh migrasi harus bersifat **additive** (hanya menambah tabel, kolom nullable, atau indeks baru).
+3. Sebelum menjalankan migrasi pada server produksi, selalu verifikasi status:
+   ```bash
+   php artisan migrate:status
+   ```
+4. Jika migrasi gagal, periksa pesan galat pada log `storage/logs/laravel.log`. Jika perlu rollback 1 langkah:
+   ```bash
+   php artisan migrate:rollback --step=1 --force
+   ```
+
+---
+
+## 3. Storage & Symlink Maintenance
+
+Aplikasi CAN Travel menyimpan aset unggahan bukti pembayaran dan manifes pada storage disk `public` (`storage/app/public`).
+
+1. **Pastikan Symlink Aktif**:
+   ```bash
+   php artisan storage:link
+   ```
+2. **Izin Hak Akses Direktori (Linux / Nginx)**:
+   ```bash
+   sudo chown -R www-data:www-data /var/www/cantravel/storage /var/www/cantravel/bootstrap/cache
+   sudo chmod -R 775 /var/www/cantravel/storage /var/www/cantravel/bootstrap/cache
+   ```
+3. **Penyimpanan Bukti Bayar**:
+   - Bukti bayar tersimpan di `storage/app/public/payment_proofs/`.
+   - Nama file dienkripsi acak (`hash.ext`) demi mencegah eksekusi skrip jahat dan path traversal.
+
+---
+
+## 4. Queue Worker & Supervisor Configuration
+
+Notifikasi pemesanan (`BookingCreatedNotification`, `PaymentReceivedNotification`, `BookingCancelledNotification`) dan tugas asinkron berjalan via Laravel Queue.
+
+### Konfigurasi Supervisor (`/etc/supervisor/conf.d/cantravel-worker.conf`)
+
+```ini
+[program:cantravel-worker]
+process_name=%(program_name)s_%(process_num)02d
+command=php /var/www/cantravel/artisan queue:work --sleep=3 --tries=3 --backoff=5,15,60 --timeout=90 --max-time=3600
+autostart=true
+autorestart=true
+stopasgroup=true
+killasgroup=true
+user=www-data
+numprocs=2
+redirect_stderr=true
+stdout_logfile=/var/www/cantravel/storage/logs/worker.log
+stopwaitsecs=3600
+```
+
+### Manajemen Supervisor
+```bash
+# Reload konfigurasi baru
+sudo supervisorctl reread
+sudo supervisorctl update
+
+# Status worker
+sudo supervisorctl status cantravel-worker:*
+
+# Restart worker setelah deploy
+sudo supervisorctl restart cantravel-worker:*
+```
+
+### Penanganan Antrean Gagal (Failed Jobs)
+```bash
+# Cek daftar job yang gagal
+php artisan queue:failed
+
+# Retry seluruh failed jobs setelah kendala upstream terselesaikan
+php artisan queue:retry all
+
+# Hapus job gagal tertentu jika tidak relevan
+php artisan queue:forget <id>
+```
+
+---
+
+## 5. Scheduler & Crontab Setup
+
+Sistem CAN Travel memerlukan scheduler untuk menjalankan:
+1. `orders:expire` — Membatalkan pesanan kedaluwarsa & melepaskan alokasi kursi (setiap menit).
+2. `payments:reconcile --hours=24` — Rekonsiliasi berkala terhadap status Midtrans (setiap 15 menit).
+
+### Konfigurasi Crontab Sistem (`crontab -e -u www-data`)
+
+```crontab
+* * * * * cd /var/www/cantravel && php artisan schedule:run >> /dev/null 2>&1
+```
+
+Kedua scheduled tasks dilindungi oleh `withoutOverlapping()` untuk mencegah *race condition* dan eksekusi duplikat saat antrean sedang sibuk.
+
+---
+
+## 6. Payment Gateway & Real Midtrans Operations
+
+CAN Travel mendukung dua driver pembayaran:
+- `fake` — Mode simulasi lokal/sandbox internal (default untuk testing & offline demo).
+- `midtrans` — Driver integrasi gateway resmi Midtrans Snap & Core API.
+
+### Konfigurasi `.env` untuk Aktivasi Midtrans Nyata
+```env
+PAYMENT_DRIVER=midtrans
+PAYMENT_CURRENCY=IDR
+PAYMENT_EXPIRY_MINUTES=120
+MIDTRANS_IS_PRODUCTION=true
+MIDTRANS_SERVER_KEY="Mid-server-xxxxxxxxxxxxxxxxx"
+MIDTRANS_CLIENT_KEY="Mid-client-xxxxxxxxxxxxxxxxx"
+MIDTRANS_SNAP_URL="https://app.midtrans.com/snap/v1/transactions"
+MIDTRANS_API_BASE_URL="https://api.midtrans.com"
+```
+
+> **PERINGATAN**: Jangan pernah commit kunci rahasia (*Server Key*) ke dalam Git. Kunci harus dimasukkan langsung ke file `.env` server produksi.
+
+### Konfigurasi Webhook di Midtrans Merchant Portal
+1. Buka dashboard Midtrans: **Settings > Configuration > Payment Notification URL**.
+2. Masukkan URL: `https://cantravel.co.id/payments/webhook`.
+3. Metode: `POST`.
+4. Protokol: Wajib `HTTPS` dengan sertifikat SSL valid.
+
+---
+
+## 7. Payment Reconciliation Strategy
+
+Untuk mengatasi webhook Midtrans yang terlambat, gagal terkirim, atau kegagalan koneksi saat pelanggan membayar:
+
+### Perintah Rekonsiliasi Otomatis & Manual
+```bash
+# Jalankan simulasi rekonsiliasi tanpa mengubah database (Dry Run)
+php artisan payments:reconcile --hours=48 --dry-run
+
+# Jalankan sinkronisasi nyata untuk 48 jam terakhir
+php artisan payments:reconcile --hours=48
+
+# Output contoh:
+# ----------------------------------------
+# CAN Travel — Hasil Rekonsiliasi Pembayaran
+# ----------------------------------------
+# Total Pesanan Diperiksa : 25
+# Berhasil Disinkronkan   : 3
+# Sudah Konsisten         : 21
+# Gagal / Error          : 1
+# Mode                    : Real Synchronization
+# Waktu Eksekusi         : 0.84 detik
+# ----------------------------------------
+```
+
+Rekonsiliasi menggunakan `lockForUpdate()` dan database transaction, sehingga aman dijalankan bersamaan dengan webhook tanpa risiko *double credit* atau *over-confirmation*.
+
+---
+
+## 8. Health Check Probe & Monitoring
+
+Endpoint kesehatan publik tersedia di:
+`GET /health`
+
+### Spesifikasi Respons
+- **Status HTTP**: `200 OK` jika sehat; `503 Service Unavailable` jika dependensi inti down.
+- **Rate Limit**: 60 request / menit per IP.
+- **Keamanan**: Tidak membocorkan nama server, path filesystem, ataupun kredensial database.
+
+Contoh payload respons:
+```json
+{
+  "status": "ok",
+  "app": "CAN Travel",
+  "timestamp": "2026-09-23T12:00:00+00:00",
+  "checks": {
+    "database": "ok",
+    "cache": "ok",
+    "storage": "ok"
+  }
+}
+```
+
+Dapat diintegrasikan langsung dengan uptime monitoring tools seperti **UptimeRobot**, **Pingdom**, **Better Uptime**, atau **Kubernetes Liveness Probe**.
+
+---
+
+## 9. Backup & Disaster Recovery Strategy
+
+### 1. Backup Database MySQL (Harian)
+```bash
+#!/usr/bin/env bash
+BACKUP_DIR="/var/backups/cantravel/mysql"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+FILENAME="$BACKUP_DIR/cantravel_db_$TIMESTAMP.sql.gz"
+
+mkdir -p "$BACKUP_DIR"
+
+# Dump database dengan transactional consistency
+mysqldump -u cantravel_user -p'SECRET_DB_PASS' \
+    --single-transaction \
+    --quick \
+    --routines \
+    --triggers \
+    cantravel_prod | gzip -9 > "$FILENAME"
+
+# Hapus backup yang lebih tua dari 14 hari
+find "$BACKUP_DIR" -type f -name "*.sql.gz" -mtime +14 -delete
+```
+
+### 2. Backup Aset Unggahan (`storage/app/public`)
+```bash
+tar -czf /var/backups/cantravel/storage_public_$TIMESTAMP.tar.gz -C /var/www/cantravel/storage/app public
+```
+
+### 3. Prosedur Restore Database
+```bash
+# 1. Masuk ke maintenance mode
+php artisan down
+
+# 2. Ekstrak dan impor file SQL
+gunzip < /var/backups/cantravel/mysql/cantravel_db_YYYYMMDD_HHMMSS.sql.gz | mysql -u cantravel_user -p cantravel_prod
+
+# 3. Jalankan migrasi tambahan jika backup lebih lama
+php artisan migrate --force
+
+# 4. Bersihkan cache
+php artisan optimize:clear
+php artisan config:cache
+
+# 5. Buka kembali aplikasi
+php artisan up
+```
+
+---
+
+## 10. Incident Response & Troubleshooting
+
+### Skenario 1: Webhook Midtrans Gagal Diterima Pelanggan
+1. Periksa log webhook:
+   ```bash
+   grep "Payment webhook" storage/logs/payments-*.log | tail -n 50
+   ```
+2. Cari pesanan berdasarkan kode pesanan di Admin Portal: `/admin/orders`.
+3. Jalankan rekonsiliasi langsung melalui Artisan:
+   ```bash
+   php artisan payments:reconcile --hours=6
+   ```
+
+### Skenario 2: Database Mengalami Lock / Antrean Menumpuk
+1. Periksa processlist MySQL:
+   ```sql
+   SHOW FULL PROCESSLIST;
+   ```
+2. Periksa apakah ada lock transaksi yang menggantung:
+   ```sql
+   SELECT * FROM information_schema.innodb_trx;
+   ```
+3. Restart queue worker untuk membersihkan koneksi yang terhambat:
+   ```bash
+   sudo supervisorctl restart cantravel-worker:*
+   ```
+
+### Skenario 3: Disk Server Penuh
+1. Periksa penggunaan disk: `df -h`.
+2. Hapus log lama yang telah terotasi:
+   ```bash
+   find /var/www/cantravel/storage/logs -name "*.log" -mtime +30 -delete
+   ```
+3. Bersihkan view cache yang lama:
+   ```bash
+   php artisan view:clear
+   ```
+
+---
+
+## 11. Rollback Procedure
+
+Jika versi rilis baru menimbulkan galat kritis di produksi:
+
+```bash
+# 1. Aktifkan maintenance mode
+php artisan down
+
+# 2. Kembalikan kode ke commit/tag sebelumnya
+git checkout <previous_stable_commit_or_tag>
+
+# 3. Pasang ulang dependensi versi stabil tersebut
+composer install --no-dev --optimize-autoloader
+npm ci && npm run build
+
+# 4. Rollback migrasi jika commit baru menyertakan migrasi yang bermasalah
+php artisan migrate:rollback --step=1 --force
+
+# 5. Segarkan cache
+php artisan optimize:clear
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 6. Restart queue worker
+php artisan queue:restart
+
+# 7. Buka kembali aplikasi
+php artisan up
+```
+
+---
+
+## 12. Security Operations Checklist
+
+- [ ] `APP_DEBUG=false` dipastikan aktif di file `.env`.
+- [ ] `APP_KEY` terkonfigurasi dengan enkripsi 256-bit valid.
+- [ ] Seluruh endpoint sensitif (`/login`, `/register`, `/booking`, `/payments/webhook`, `/tickets/verify`) terlindungi oleh rate limiting.
+- [ ] Header keamanan produksi aktif: `X-Frame-Options`, `X-Content-Type-Options`, `Content-Security-Policy`, `Referrer-Policy`, `X-Request-ID`.
+- [ ] Kredensial Midtrans Server Key dan Database Password tidak pernah dikomit ke repositori publik.
+- [ ] Akses portal `/admin` hanya dapat diakses oleh akun bertipe `role = admin`.
+- [ ] Verifikasi tiket menggunakan token UUID acak 32 karakter tahan enumerasi (*anti-enumeration*).
+- [ ] File unggahan bukti bayar hanya mengizinkan MIME type: `jpg`, `jpeg`, `png`, `pdf` dengan batas maksimal 2MB.
+- [ ] Audit log mencatat login admin, perubahan status pesanan, ekspor CSV, dan sinkronisasi pembayaran.

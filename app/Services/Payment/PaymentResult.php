@@ -12,6 +12,8 @@ class PaymentResult
 
     public const STATUS_EXPIRED = 'expired';
 
+    public const STATUS_REFUNDED = 'refunded';
+
     public function __construct(
         protected string $status,
         protected ?string $reference = null,
@@ -40,6 +42,11 @@ class PaymentResult
         return new self(self::STATUS_EXPIRED, $reference, null, $message, $payload);
     }
 
+    public static function refunded(string $reference, ?string $transactionId = null, string $message = 'Payment refunded.', array $payload = []): self
+    {
+        return new self(self::STATUS_REFUNDED, $reference, $transactionId, $message, $payload);
+    }
+
     public function isSuccess(): bool
     {
         return $this->status === self::STATUS_SUCCESS;
@@ -58,6 +65,11 @@ class PaymentResult
     public function isExpired(): bool
     {
         return $this->status === self::STATUS_EXPIRED;
+    }
+
+    public function isRefunded(): bool
+    {
+        return $this->status === self::STATUS_REFUNDED;
     }
 
     public function getStatus(): string

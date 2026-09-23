@@ -24,16 +24,16 @@ class PaymentWebhookController extends Controller
      */
     public function handle(Request $request): JsonResponse
     {
-        Log::info('Payment webhook received', [
+        Log::channel('payments')->info('Payment webhook received', [
             'ip' => $request->ip(),
-            'headers' => $request->headers->all(),
-            'payload' => $request->all(),
+            'payload' => $request->except(['client_key', 'server_key']),
         ]);
 
         // 1. Authenticate webhook signature
         if (! $this->gateway->verifyWebhookSignature($request)) {
-            Log::warning('Payment webhook rejected: invalid or missing signature', [
+            Log::channel('security')->warning('Payment webhook rejected: invalid or missing signature', [
                 'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
             ]);
 
             return response()->json([
@@ -63,7 +63,7 @@ class PaymentWebhookController extends Controller
             ->first();
 
         if (! $payment) {
-            Log::warning("Payment webhook reference not found in database: {$reference}");
+            Log::channel('payments')->warning("Payment webhook reference not found in database: {$reference}");
 
             return response()->json([
                 'status' => 'error',
@@ -73,9 +73,43 @@ class PaymentWebhookController extends Controller
 
         $order = $payment->order;
 
-        // 3. Webhook Idempotency Check: Don't process twice if already settled or processed
+        // 3. Amount & Currency Validation
+        $webhookAmount = $payload['gross_amount'] ?? $payload['amount'] ?? null;
+        if ($webhookAmount !== null) {
+            $expectedAmount = (float) $payment->amount;
+            $receivedAmount = (float) $webhookAmount;
+
+            if (abs($expectedAmount - $receivedAmount) > 0.01) {
+                Log::channel('security')->warning("Payment webhook amount mismatch rejected for {$order->order_code}", [
+                    'expected' => $expectedAmount,
+                    'received' => $receivedAmount,
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Payment amount mismatch.',
+                ], 422);
+            }
+        }
+
+        if (isset($payload['currency'])) {
+            $configuredCurrency = config('payment.currency', 'IDR');
+            if (strtoupper($payload['currency']) !== strtoupper($configuredCurrency)) {
+                Log::channel('security')->warning("Payment webhook currency mismatch rejected for {$order->order_code}", [
+                    'expected' => $configuredCurrency,
+                    'received' => $payload['currency'],
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Payment currency mismatch.',
+                ], 422);
+            }
+        }
+
+        // 4. Webhook Idempotency Check: Don't process twice if already settled or processed
         if ($payment->webhook_processed_at !== null || $payment->status === PaymentResult::STATUS_SUCCESS) {
-            Log::info("Payment webhook ignored: event already processed for order {$order->order_code}");
+            Log::channel('payments')->info("Payment webhook ignored: event already processed for order {$order->order_code}");
 
             return response()->json([
                 'status' => 'success',
@@ -84,7 +118,17 @@ class PaymentWebhookController extends Controller
             ], 200);
         }
 
-        // 4. Atomic status synchronization inside DB transaction
+        // 5. State Machine Validation: Prevent illegal transitions (e.g. cancelled -> confirmed)
+        if ($result->isSuccess() && ! $order->canTransition('confirmed', 'paid')) {
+            Log::channel('security')->warning("Payment webhook attempted illegal transition to paid for order {$order->order_code} with status {$order->status}/{$order->payment_status}");
+
+            return response()->json([
+                'status' => 'error',
+                'message' => "Order cannot transition to confirmed and paid from {$order->status}/{$order->payment_status}.",
+            ], 422);
+        }
+
+        // 6. Atomic status synchronization inside DB transaction
         DB::transaction(function () use ($payment, $order, $result, $payload) {
             $lockedPayment = Payment::where('id', $payment->id)->lockForUpdate()->first();
             $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
@@ -107,12 +151,12 @@ class PaymentWebhookController extends Controller
                     'expires_at' => null,
                 ]);
 
-                Log::info("Payment webhook confirmed order {$lockedOrder->order_code}");
+                Log::channel('payments')->info("Payment webhook confirmed order {$lockedOrder->order_code}");
 
                 try {
                     $lockedOrder->user?->notify(new PaymentReceivedNotification($lockedOrder));
                 } catch (\Throwable $e) {
-                    Log::error("Failed to dispatch payment notification for {$lockedOrder->order_code}: ".$e->getMessage());
+                    Log::channel('payments')->error("Failed to dispatch payment notification for {$lockedOrder->order_code}: ".$e->getMessage());
                 }
 
             } elseif ($result->isExpired()) {
@@ -128,12 +172,12 @@ class PaymentWebhookController extends Controller
                     'payment_status' => 'expired',
                 ]);
 
-                Log::info("Payment webhook expired order {$lockedOrder->order_code}");
+                Log::channel('payments')->info("Payment webhook expired order {$lockedOrder->order_code}");
 
                 try {
                     $lockedOrder->user?->notify(new BookingExpiredNotification($lockedOrder));
                 } catch (\Throwable $e) {
-                    Log::error("Failed to dispatch expiration notification for {$lockedOrder->order_code}: ".$e->getMessage());
+                    Log::channel('payments')->error("Failed to dispatch expiration notification for {$lockedOrder->order_code}: ".$e->getMessage());
                 }
 
             } elseif ($result->isFailed()) {
@@ -144,7 +188,7 @@ class PaymentWebhookController extends Controller
                     'metadata' => array_merge($lockedPayment->metadata ?? [], ['webhook' => $payload]),
                 ]);
 
-                Log::warning("Payment webhook recorded failure for order {$lockedOrder->order_code}");
+                Log::channel('payments')->warning("Payment webhook recorded failure for order {$lockedOrder->order_code}");
             }
         });
 

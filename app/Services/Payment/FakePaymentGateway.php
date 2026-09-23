@@ -101,6 +101,47 @@ class FakePaymentGateway implements PaymentGatewayInterface
     }
 
     /**
+     * Get payment status from the simulation provider.
+     */
+    public function getPaymentStatus(string $transactionIdOrReference): PaymentResult
+    {
+        return PaymentResult::success(
+            $transactionIdOrReference,
+            $transactionIdOrReference,
+            'Simulated payment status retrieved.',
+            ['provider' => $this->getProviderName()]
+        );
+    }
+
+    /**
+     * Cancel a payment in simulation mode.
+     */
+    public function cancelPayment(Order $order): PaymentResult
+    {
+        $ref = $order->payment?->payment_reference ?? $order->order_code;
+        Log::info("Payment simulation cancelled for order: {$order->order_code}");
+
+        return PaymentResult::failed($ref, 'Simulated payment cancelled.', [
+            'provider' => $this->getProviderName(),
+            'order_code' => $order->order_code,
+        ]);
+    }
+
+    /**
+     * Expire a payment in simulation mode.
+     */
+    public function expirePayment(Order $order): PaymentResult
+    {
+        $ref = $order->payment?->payment_reference ?? $order->order_code;
+        Log::info("Payment simulation expired for order: {$order->order_code}");
+
+        return PaymentResult::expired($ref, 'Simulated payment marked as expired.', [
+            'provider' => $this->getProviderName(),
+            'order_code' => $order->order_code,
+        ]);
+    }
+
+    /**
      * Verify authenticity of a webhook request signature using HMAC SHA-256.
      */
     public function verifyWebhookSignature(Request $request): bool

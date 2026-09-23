@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -31,13 +32,20 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
-            Log::info('User logged in successfully', [
+            Log::channel('security')->info('User logged in successfully', [
                 'user_id' => Auth::id(),
                 'role' => Auth::user()->role,
                 'ip' => $request->ip(),
             ]);
 
             if (Auth::user()->isAdmin()) {
+                AuditLogger::log(
+                    action: 'admin_login',
+                    targetType: 'user',
+                    targetId: Auth::id(),
+                    metadata: ['email' => Auth::user()->email]
+                );
+
                 return redirect()->intended(route('admin.dashboard'))
                     ->with('success', 'Selamat datang kembali, Administrator CAN Travel!');
             }
@@ -46,7 +54,7 @@ class AuthController extends Controller
                 ->with('success', 'Selamat datang kembali di CAN Travel, '.Auth::user()->name.'!');
         }
 
-        Log::warning('Failed login attempt', [
+        Log::channel('security')->warning('Failed login attempt', [
             'email' => $request->input('email'),
             'ip' => $request->ip(),
         ]);
@@ -75,6 +83,11 @@ class AuthController extends Controller
             'phone' => $validated['phone'],
             'role' => 'customer',
             'password' => Hash::make($validated['password']),
+        ]);
+
+        Log::channel('security')->info('New customer registered', [
+            'user_id' => $user->id,
+            'ip' => $request->ip(),
         ]);
 
         Auth::login($user);

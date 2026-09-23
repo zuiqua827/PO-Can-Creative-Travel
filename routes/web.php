@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AuditLogController as AdminAuditLogController;
 use App\Http\Controllers\Admin\BusController as AdminBusController;
 use App\Http\Controllers\Admin\BusSeatController as AdminBusSeatController;
 use App\Http\Controllers\Admin\CustomerController as AdminCustomerController;
@@ -9,6 +10,7 @@ use App\Http\Controllers\Admin\RouteController as AdminRouteController;
 use App\Http\Controllers\Admin\TripController as AdminTripController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\HealthCheckController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PaymentWebhookController;
@@ -80,7 +82,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Customers
     Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
+
+    // Audit Logs
+    Route::get('/audit-logs', [AdminAuditLogController::class, 'index'])->name('audit-logs.index');
 });
+
+// Production Health Check Probe
+Route::get('/health', [HealthCheckController::class, 'check'])
+    ->name('health')
+    ->middleware('throttle:60,1');
 
 // Public Ticket Verification (QR Code scanning)
 Route::get('/tickets/verify/{token}', [TicketVerificationController::class, 'verify'])

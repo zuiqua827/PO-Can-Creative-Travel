@@ -5,6 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'CAN Travel — Perjalanan Nyaman, Berangkat Tanpa Khawatir')</title>
     <meta name="description" content="@yield('meta_description', 'Pesan tiket bus CAN Travel online dengan mudah dan aman. Pilihan armada Executive dan Sleeper dengan fasilitas modern, denah kursi interaktif, dan e-tiket instan.')">
+    <link rel="canonical" href="{{ url()->current() }}">
+    <meta name="theme-color" content="#0270c7">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="CAN Travel">
+    <meta property="og:title" content="@yield('title', 'CAN Travel — Perjalanan Nyaman, Berangkat Tanpa Khawatir')">
+    <meta property="og:description" content="@yield('meta_description', 'Pesan tiket bus CAN Travel online dengan mudah dan aman. Pilihan armada Executive dan Sleeper dengan fasilitas modern, denah kursi interaktif, dan e-tiket instan.')">
+    <meta property="og:url" content="{{ url()->current() }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="@yield('title', 'CAN Travel — Perjalanan Nyaman, Berangkat Tanpa Khawatir')">
+    <meta name="twitter:description" content="@yield('meta_description', 'Pesan tiket bus CAN Travel online dengan mudah dan aman.')">
+
+    <!-- Structured Data (JSON-LD) -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "TravelAgency",
+      "name": "CAN Travel",
+      "url": "{{ url('/') }}",
+      "description": "Platform pemesanan tiket bus online resmi CAN Travel armada Executive & Sleeper bus.",
+      "priceRange": "Rp 150.000 - Rp 500.000"
+    }
+    </script>
+
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
     
     <!-- Google Fonts -->
@@ -32,7 +59,7 @@
             <div class="flex items-center space-x-4 text-slate-400 text-[11px]">
                 <span>Pusat Bantuan: <strong class="text-white">0812-3456-7890</strong></span>
                 <span class="hidden sm:inline">|</span>
-                <span class="hidden sm:inline">support@pocan.com</span>
+                <span class="hidden sm:inline">support@cantravel.co.id</span>
             </div>
         </div>
     </aside>
@@ -308,7 +335,7 @@
                         </p>
                         <p>
                             <span class="text-white font-semibold mr-2">Email:</span>
-                            <span class="text-slate-300">support@pocan.com</span>
+                            <span class="text-slate-300">support@cantravel.co.id</span>
                         </p>
                     </div>
                 </div>

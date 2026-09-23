@@ -140,7 +140,7 @@ class BusBookingSystemTest extends TestCase
         $cancelledTrip = Trip::factory()->create([
             'bus_id' => $trip->bus_id,
             'route_id' => $trip->route_id,
-            'trip_code' => 'TRIP-CANCELLED-'.rand(100, 999),
+            'trip_code' => 'TRIP-CANCELLED-'.uniqid(),
             'status' => 'cancelled',
             'departure_at' => now()->addDays(2),
             'arrival_at' => now()->addDays(2)->addHours(8),
@@ -166,7 +166,7 @@ class BusBookingSystemTest extends TestCase
         $pastTrip = Trip::factory()->create([
             'bus_id' => $trip->bus_id,
             'route_id' => $trip->route_id,
-            'trip_code' => 'TRIP-PAST-'.rand(100, 999),
+            'trip_code' => 'TRIP-PAST-'.uniqid(),
             'status' => 'scheduled',
             'departure_at' => now()->subDay(),
             'arrival_at' => now()->subHours(16),
@@ -533,9 +533,18 @@ class BusBookingSystemTest extends TestCase
     {
         $customer = User::factory()->create(['role' => 'customer']);
 
-        $trip = Trip::with('bus.busSeats')->where('status', 'scheduled')->where('departure_at', '>', now())->get()->first(function ($t) {
-            return count($t->bus->busSeats) - count($t->getBookedSeatIds()) >= 2;
-        });
+        $trip = Trip::with(['bus.busSeats' => fn ($q) => $q->where('status', 'available')])
+            ->where('status', 'scheduled')
+            ->where('departure_at', '>', now())
+            ->get()
+            ->first(function ($t) {
+                if (! $t->bus) {
+                    return false;
+                }
+                $avail = $t->bus->busSeats->whereNotIn('id', $t->getBookedSeatIds());
+
+                return $avail->count() >= 2;
+            });
 
         if (! $trip) {
             $bus = Bus::factory()->create(['seat_capacity' => 10]);
@@ -549,12 +558,12 @@ class BusBookingSystemTest extends TestCase
                 'departure_at' => now()->addDays(3),
                 'arrival_at' => now()->addDays(3)->addHours(8),
             ]);
-            $trip->load('bus.busSeats');
+            $trip->load(['bus.busSeats' => fn ($q) => $q->where('status', 'available')]);
         }
 
         $bookedIds = $trip->getBookedSeatIds();
         $availableSeats = $trip->bus->busSeats->whereNotIn('id', $bookedIds)->take(2);
-        $seatIds = $availableSeats->pluck('id')->toArray();
+        $seatIds = $availableSeats->pluck('id')->values()->toArray();
 
         $passengers = [
             $seatIds[0] => ['name' => 'Ahmad Dahlan', 'phone' => '081200000001', 'id_number' => '3201010101010001'],

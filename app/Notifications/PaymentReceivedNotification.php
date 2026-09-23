@@ -4,12 +4,17 @@ namespace App\Notifications;
 
 use App\Models\Order;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class PaymentReceivedNotification extends Notification
+class PaymentReceivedNotification extends Notification implements ShouldQueue
 {
     use Queueable;
+
+    public int $tries = 3;
+
+    public int $backoff = 60;
 
     public function __construct(public Order $order) {}
 
@@ -21,6 +26,7 @@ class PaymentReceivedNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         $trip = $this->order->trip;
+        $seats = $this->order->orderItems->map(fn ($item) => $item->busSeat?->seat_number)->filter()->implode(', ');
 
         return (new MailMessage)
             ->subject("Pembayaran Terverifikasi — E-Tiket {$this->order->order_code} Siap! [CAN Travel]")
@@ -28,6 +34,8 @@ class PaymentReceivedNotification extends Notification
             ->line('Kabar gembira! Pembayaran untuk pesanan tiket bus Anda telah berhasil diverifikasi secara sistem.')
             ->line("Kode Pemesanan: {$this->order->order_code}")
             ->line("Rute: {$trip->route->origin} → {$trip->route->destination}")
+            ->line("Armada Bus: {$trip->bus->name} ({$trip->bus->type})")
+            ->line('Nomor Kursi: '.($seats ?: '-'))
             ->line("Jadwal Berangkat: {$trip->departure_at->format('d M Y, H:i')} WIB")
             ->line("Total Lunas: {$this->order->formatted_total}")
             ->action('Lihat E-Tiket & Boarding Pass', route('orders.show', $this->order))

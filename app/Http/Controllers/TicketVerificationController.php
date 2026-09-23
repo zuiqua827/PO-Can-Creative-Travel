@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\OrderItem;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -22,6 +23,13 @@ class TicketVerificationController extends Controller
         ])->where('ticket_token', $token)->first();
 
         if (! $item) {
+            AuditLogger::log(
+                action: 'ticket_verification_failed',
+                targetType: 'order_item',
+                targetId: null,
+                metadata: ['attempted_token' => substr($token, 0, 16)]
+            );
+
             Log::warning("Ticket verification failed: token not found [{$token}]", ['ip' => $request->ip()]);
 
             return response()->view('tickets.verify', [
@@ -37,6 +45,17 @@ class TicketVerificationController extends Controller
 
         $order = $item->order;
         $verifiedAt = now();
+
+        AuditLogger::log(
+            action: 'ticket_verified',
+            targetType: 'order_item',
+            targetId: $item->id,
+            metadata: [
+                'ticket_token' => $item->ticket_token,
+                'order_code' => $order->order_code,
+                'passenger' => $item->passenger_name,
+            ]
+        );
 
         Log::info("Ticket verified successfully: {$item->ticket_token} for order {$order->order_code}", [
             'ip' => $request->ip(),

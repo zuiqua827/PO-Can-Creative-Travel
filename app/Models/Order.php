@@ -108,4 +108,54 @@ class Order extends Model
 
         return in_array($newStatus, $allowedTransitions[$this->status] ?? []);
     }
+
+    /**
+     * Validate whether a payment status transition is allowed.
+     */
+    public function canPaymentTransitionTo(string $newPaymentStatus): bool
+    {
+        if ($this->payment_status === $newPaymentStatus) {
+            return true;
+        }
+
+        // Strict prohibitions
+        if (in_array($this->payment_status, ['expired', 'refunded'])) {
+            return false;
+        }
+
+        if ($this->status === 'cancelled' && $newPaymentStatus === 'paid') {
+            return false;
+        }
+
+        $allowedTransitions = [
+            'unpaid' => ['paid', 'expired', 'failed'],
+            'failed' => ['paid', 'expired'],
+            'paid' => ['refunded'],
+            'expired' => [],
+            'refunded' => [],
+        ];
+
+        return in_array($newPaymentStatus, $allowedTransitions[$this->payment_status] ?? []);
+    }
+
+    /**
+     * Check if a combined order + payment state transition is valid.
+     */
+    public function canTransition(string $newOrderStatus, string $newPaymentStatus): bool
+    {
+        // Explicitly reject prohibited transitions
+        if (($this->status === 'cancelled' || $this->payment_status === 'expired') && $newPaymentStatus === 'paid') {
+            return false;
+        }
+
+        if ($this->status === 'completed' && $newOrderStatus === 'pending') {
+            return false;
+        }
+
+        if ($this->payment_status === 'refunded' && $newPaymentStatus === 'paid') {
+            return false;
+        }
+
+        return $this->canTransitionTo($newOrderStatus) && $this->canPaymentTransitionTo($newPaymentStatus);
+    }
 }
