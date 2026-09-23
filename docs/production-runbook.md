@@ -369,3 +369,110 @@ php artisan up
 - [ ] Verifikasi tiket menggunakan token UUID acak 32 karakter tahan enumerasi (*anti-enumeration*).
 - [ ] File unggahan bukti bayar hanya mengizinkan MIME type: `jpg`, `jpeg`, `png`, `pdf` dengan batas maksimal 2MB.
 - [ ] Audit log mencatat login admin, perubahan status pesanan, ekspor CSV, dan sinkronisasi pembayaran.
+
+---
+
+## 13. FINAL PRODUCTION RELEASE CHECKLIST
+
+Daftar periksa verifikasi akhir (*Final Release Quality Gate*) sebelum meluncurkan CAN Travel ke publik:
+
+### A. Pre-Flight Configuration
+- [ ] **Environment**: `APP_ENV=production` dan `APP_DEBUG=false` pada `.env`.
+- [ ] **Application Key**: `APP_KEY` terkonfigurasi dengan valid (AES-256-CBC).
+- [ ] **Base URL**: `APP_URL=https://cantravel.co.id` menggunakan HTTPS aktif.
+- [ ] **No Secrets in Repo**: File `.env` tidak ter-track oleh Git (`.gitignore` diverifikasi).
+- [ ] **Brand Consistency**: Seluruh halaman publik memuat identitas **CAN Travel**. Bebas dari string warisan (`PO CAN` = 0, `PCT-` = 0).
+
+### B. Database & Schema
+- [ ] **Database Engine**: MySQL 8.0+ / MariaDB 10.4+ dengan InnoDB engine dan UTF-8 multibyte (`utf8mb4`).
+- [ ] **Migration Status**: Seluruh 15 migrasi tercatat status `[Ran]`.
+- [ ] **Performance Indexes**: Indeks komposit aktif:
+  - `idx_orders_status_payment_expires` pada `orders(status, payment_status, expires_at)` (optimalisasi scheduler 1 menit).
+  - `idx_orders_trip_status_payment` pada `orders(trip_id, status, payment_status)`.
+  - `idx_trips_departure_status` pada `trips(departure_at, status)`.
+  - `idx_routes_origin_dest_status` pada `routes(origin, destination, status)`.
+  - `idx_payments_ref_order` pada `payments(payment_reference, order_id)`.
+- [ ] **Zero Destructive Queries**: Tidak pernah menjalankan `migrate:fresh` atau `db:wipe` di server produksi.
+
+### C. UX, Accessibility & Error Handling
+- [ ] **Double Submit Prevention**: Tombol submit checkout dan konfirmasi pembayaran dilindungi oleh Alpine.js `submitting` state dengan visual loading spinner dan penonaktifan tombol klik berulang.
+- [ ] **WCAG 2.1 AA Accessibility**: Pemilihan kursi interaktif menyertakan live announcer screen reader via `aria-live="polite"` dan atribut `aria-label`/`aria-pressed`.
+- [ ] **Production Error Pages**: Seluruh halaman kesalahan HTTP (`403`, `404`, `419`, `422`, `429`, `500`, `503`) menggunakan tata letak bermerek CAN Travel tanpa membocorkan trace SQL atau path direktori internal.
+- [ ] **Sensitive Field Scrubbing**: Exception handler `$dontFlash` membersihkan parameter rahasia (`password`, `token`, `server_key`, `client_key`, `secret`, `signature`, `cvv`, `card_number`).
+
+### D. Queue, Scheduler & Operations
+- [ ] **Queue Supervisor**: Supervisor mengelola minimal 2 worker `cantravel-worker` untuk notifikasi asinkron dan email e-tiket.
+- [ ] **Cron Scheduler**: Cron OS menjalankan `* * * * * cd /var/www/cantravel && php artisan schedule:run >> /dev/null 2>&1`.
+  - `orders:expire` berjalan setiap menit dengan `withoutOverlapping()`.
+  - `payments:reconcile` berjalan setiap 15 menit dengan `withoutOverlapping()`.
+- [ ] **Health Monitoring**: Probe `GET /health` mengembalikan HTTP 200 dan JSON `status: "ok"` tanpa mengekspos kredensial.
+- [ ] **Audit Trail**: Seluruh tindakan administratif (hapus armada/rute/jadwal, update pesanan, ekspor CSV, sweep kedaluwarsa) terekam di tabel `audit_logs`.
+
+---
+
+## 14. Midtrans Production Activation Step-by-Step Guide
+
+Secara bawaan sistem CAN Travel berjalan dalam mode aman (*Safe Simulation / Sandbox Adapter*). Ikuti panduan manual berikut saat beralih ke transaksi nyata Midtrans:
+
+### Langkah 1: Pendaftaran Akun Midtrans Production
+1. Akses [Midtrans Merchant Administration Portal (MAP)](https://dashboard.midtrans.com).
+2. Selesaikan proses verifikasi KYC dan aktivasi merchant bisnis CAN Travel hingga disetujui (*Live Mode Approval*).
+
+### Langkah 2: Dapatkan Kredensial Produksi
+1. Masuk ke **Settings** > **Access Keys**.
+2. Pastikan toggle di sudut kiri atas berada pada posisi **Production** (bukan *Sandbox*).
+3. Salin:
+   - **Merchant ID**: Misal `G123456789`
+   - **Client Key**: Misal `Mid-client-xxxxxxxxxxxxxxxx`
+   - **Server Key**: Misal `Mid-server-xxxxxxxxxxxxxxxx`
+
+### Langkah 3: Konfigurasi Webhook URL di Portal Midtrans
+1. Masuk ke **Settings** > **Configuration**.
+2. Pada field **Payment Notification URL**, isi URL publik HTTPS aplikasi CAN Travel:
+   ```
+   https://cantravel.co.id/payments/webhook
+   ```
+3. Set **Finish Redirect URL**:
+   ```
+   https://cantravel.co.id/my-orders
+   ```
+4. Set **Unfinish Redirect URL**:
+   ```
+   https://cantravel.co.id/my-orders
+   ```
+5. Set **Error Redirect URL**:
+   ```
+   https://cantravel.co.id/my-orders
+   ```
+6. Simpan perubahan konfigurasi (*Save Changes*).
+
+### Langkah 4: Pembaruan Environment Server Produksi (`.env`)
+Perbarui file `.env` pada server produksi (JANGAN commit ke repositori Git):
+```ini
+# Pengalihan Driver Pembayaran
+PAYMENT_DRIVER=midtrans
+PAYMENT_CURRENCY=IDR
+PAYMENT_EXPIRY_MINUTES=120
+
+# Kredensial Resmi Midtrans Produksi
+MIDTRANS_SERVER_KEY=Mid-server-YOUR_ACTUAL_PRODUCTION_SERVER_KEY
+MIDTRANS_CLIENT_KEY=Mid-client-YOUR_ACTUAL_PRODUCTION_CLIENT_KEY
+MIDTRANS_MERCHANT_ID=G_YOUR_PRODUCTION_MERCHANT_ID
+MIDTRANS_IS_PRODUCTION=true
+MIDTRANS_SNAP_URL="https://app.midtrans.com/snap/v1/transactions"
+MIDTRANS_API_BASE_URL="https://api.midtrans.com"
+```
+
+### Langkah 5: Muat Ulang Cache Konfigurasi
+Jalankan di server produksi:
+```bash
+php artisan config:clear
+php artisan config:cache
+php artisan queue:restart
+```
+
+### Langkah 6: Verifikasi Transaksi Perdana
+1. Lakukan pemesanan 1 kursi uji coba di portal CAN Travel.
+2. Selesaikan pembayaran menggunakan kanal riil (QRIS / Virtual Account) bernilai kecil.
+3. Pastikan webhook Midtrans diterima (`storage/logs/laravel.log` channel `payments` mencatat status `settlement`).
+4. Pastikan pesanan otomatis beralih ke `confirmed` dan e-tiket resmi diterbitkan dengan QR code valid.

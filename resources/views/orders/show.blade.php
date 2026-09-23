@@ -74,8 +74,8 @@
                         <p class="text-xs text-rose-700 mt-0.5">Pesanan ini telah dibatalkan dan kursi telah dilepaskan kembali ke sistem tiket.</p>
                     </div>
                 </div>
-                <a href="{{ route('trips.index') }}" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition shrink-0">
-                    Pesan Tiket Baru
+                <a href="{{ route('trips.index', ['origin' => $order->trip->route->origin, 'destination' => $order->trip->route->destination]) }}" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition shrink-0">
+                    Cari Rute Serupa
                 </a>
             </div>
         @elseif($order->status === 'expired' || $order->payment_status === 'expired')
@@ -89,8 +89,8 @@
                         <p class="text-xs text-slate-600 mt-0.5">Waktu pembayaran 2 jam telah lewat. Kursi yang Anda pilih telah dilepaskan kembali.</p>
                     </div>
                 </div>
-                <a href="{{ route('trips.index') }}" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition shrink-0">
-                    Cari Jadwal Baru
+                <a href="{{ route('trips.index', ['origin' => $order->trip->route->origin, 'destination' => $order->trip->route->destination]) }}" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition shrink-0">
+                    Cari Rute Serupa
                 </a>
             </div>
         @elseif($order->payment_status === 'unpaid')
@@ -276,31 +276,48 @@
                     </div>
                 </div>
 
-                <!-- Boarding Instructions & Verified QR Code -->
-                <div class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <div class="text-xs text-slate-500 space-y-1 text-center sm:text-left flex-1">
-                        <p class="font-bold text-slate-800">Petunjuk Boarding CAN Travel:</p>
-                        <p>1. Tiba di pool/terminal keberangkatan paling lambat 30 menit sebelum jadwal.</p>
-                        <p>2. Tunjukkan QR Code E-Tiket ini kepada petugas atau kru bus saat boarding.</p>
-                        <p>3. Petugas akan memindai QR Code untuk verifikasi manifest resmi secara real-time.</p>
-                        <p>4. Kapasitas bagasi gratis maksimal 20 kg per penumpang.</p>
-                    </div>
-
-                    <!-- Verified SVG QR Code Box -->
-                    @php
-                        $primaryToken = $order->orderItems->first()?->ticket_token ?? $order->order_code;
-                        $verifyUrl = route('tickets.verify', ['token' => $primaryToken]);
-                    @endphp
-                    <div class="text-center bg-white p-3 rounded-2xl border border-slate-200 shadow-sm shrink-0" aria-label="QR Code Verifikasi Boarding">
-                        <div class="flex items-center justify-center p-1 bg-white rounded-xl">
-                            {!! \App\Services\QrCodeService::svg($verifyUrl, 120) !!}
+                <!-- Boarding Instructions & QR Code -->
+                @if($order->payment_status === 'paid')
+                    <div class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">
+                        <div class="text-xs text-slate-500 space-y-1 text-center sm:text-left flex-1">
+                            <p class="font-bold text-slate-800">Petunjuk Boarding CAN Travel:</p>
+                            <p>1. Tiba di pool/terminal keberangkatan paling lambat 30 menit sebelum jadwal.</p>
+                            <p>2. Tunjukkan QR Code E-Tiket ini kepada petugas atau kru bus saat boarding.</p>
+                            <p>3. Petugas akan memindai QR Code untuk verifikasi manifest resmi secara real-time.</p>
+                            <p>4. Kapasitas bagasi gratis maksimal 20 kg per penumpang.</p>
                         </div>
-                        <span class="text-[10px] font-mono font-bold tracking-widest text-slate-700 block mt-1.5">{{ $order->order_code }}</span>
-                        <a href="{{ $verifyUrl }}" target="_blank" class="text-[10px] text-brand-600 hover:text-brand-800 font-bold hover:underline block mt-0.5 no-print">
-                            Pindai / Cek Tiket &rarr;
-                        </a>
+
+                        <!-- Verified SVG QR Code Box -->
+                        @php
+                            $primaryToken = $order->orderItems->first()?->ticket_token ?? $order->order_code;
+                            $verifyUrl = route('tickets.verify', ['token' => $primaryToken]);
+                        @endphp
+                        <div class="text-center bg-white p-3 rounded-2xl border border-slate-200 shadow-sm shrink-0" aria-label="QR Code Verifikasi Boarding">
+                            <div class="flex items-center justify-center p-1 bg-white rounded-xl">
+                                {!! \App\Services\QrCodeService::svg($verifyUrl, 120) !!}
+                            </div>
+                            <span class="text-[10px] font-mono font-bold tracking-widest text-slate-700 block mt-1.5">{{ $order->order_code }}</span>
+                            <a href="{{ $verifyUrl }}" target="_blank" class="text-[10px] text-brand-600 hover:text-brand-800 font-bold hover:underline block mt-0.5 no-print">
+                                Pindai / Cek Tiket &rarr;
+                            </a>
+                        </div>
                     </div>
-                </div>
+                @else
+                    <div class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 p-4 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 text-xs">
+                        <div class="space-y-1">
+                            <strong class="font-bold text-slate-900 flex items-center">
+                                <svg class="w-4 h-4 text-amber-600 mr-1.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                                QR Code & E-Tiket Belum Diterbitkan
+                            </strong>
+                            <p class="text-slate-600">QR Code boarding pass resmi hanya akan diterbitkan otomatis setelah pembayaran pesanan berhasil diselesaikan.</p>
+                        </div>
+                        @if(!in_array($order->status, ['cancelled', 'expired']) && $order->payment_status === 'unpaid')
+                            <a href="{{ route('booking.payment', $order) }}" class="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition shrink-0">
+                                Selesaikan Pembayaran &rarr;
+                            </a>
+                        @endif
+                    </div>
+                @endif
 
             </div>
 

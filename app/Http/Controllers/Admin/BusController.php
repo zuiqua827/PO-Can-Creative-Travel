@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\BusRequest;
 use App\Models\Bus;
+use App\Services\Audit\AuditLogger;
 
 class BusController extends Controller
 {
@@ -93,10 +94,21 @@ class BusController extends Controller
 
     public function destroy(Bus $bus)
     {
+        if ($bus->trips()->exists()) {
+            return back()->with('error', "Armada {$bus->name} masih terkait dengan jadwal perjalanan dan tidak dapat dihapus. Nonaktifkan status armada jika sedang tidak beroperasi.");
+        }
+
+        $busId = $bus->id;
         $name = $bus->name;
+        $code = $bus->code;
         $bus->delete();
 
+        AuditLogger::log('bus_deleted', 'bus', $busId, [
+            'name' => $name,
+            'code' => $code,
+        ]);
+
         return redirect()->route('admin.buses.index')
-            ->with('success', "Armada {$name} berhasil dihapus.");
+            ->with('success', "Armada {$name} ({$code}) berhasil dihapus.");
     }
 }

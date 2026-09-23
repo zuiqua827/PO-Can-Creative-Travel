@@ -34,6 +34,19 @@
                     placeholder="Kode order / nama / HP / penumpang...">
             </div>
 
+            <!-- Route Filter -->
+            <div class="lg:col-span-2">
+                <label class="block font-bold text-slate-500 uppercase mb-1">Rute Perjalanan</label>
+                <select name="route_id" class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold">
+                    <option value="">Semua Rute</option>
+                    @foreach($routes as $route)
+                        <option value="{{ $route->id }}" {{ (string) request('route_id') === (string) $route->id ? 'selected' : '' }}>
+                            {{ $route->origin }} → {{ $route->destination }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
             <!-- Status Order -->
             <div>
                 <label class="block font-bold text-slate-500 uppercase mb-1">Status Order</label>
@@ -59,19 +72,19 @@
             </div>
 
             <!-- Date From -->
-            <div>
+            <div class="lg:col-span-2">
                 <label class="block font-bold text-slate-500 uppercase mb-1">Dari Tanggal</label>
                 <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold">
             </div>
 
             <!-- Date To -->
-            <div>
+            <div class="lg:col-span-2">
                 <label class="block font-bold text-slate-500 uppercase mb-1">Sampai Tanggal</label>
                 <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold">
             </div>
 
             <!-- Filter Buttons -->
-            <div class="lg:col-span-6 flex items-center justify-end space-x-2 pt-2">
+            <div class="lg:col-span-2 flex items-center justify-end space-x-2 pt-5">
                 <a href="{{ route('admin.orders.index') }}" class="py-2 px-4 rounded-xl border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition text-center">
                     Reset Filter
                 </a>
@@ -135,8 +148,19 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-slate-400 font-medium">
-                                Tidak ada data pesanan yang sesuai dengan filter yang dipilih.
+                            <td colspan="8" class="py-12 text-center">
+                                <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                    </svg>
+                                </div>
+                                <h4 class="font-bold text-slate-700 text-sm">Tidak ada pesanan ditemukan</h4>
+                                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Tidak ada data pesanan tiket yang cocok dengan kriteria filter pencarian Anda.</p>
+                                @if(request()->anyFilled(['search', 'status', 'payment_status', 'date_from', 'date_to']))
+                                    <a href="{{ route('admin.orders.index') }}" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition">
+                                        Reset Filter Pencarian
+                                    </a>
+                                @endif
                             </td>
                         </tr>
                     @endforelse

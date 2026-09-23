@@ -117,7 +117,9 @@ class TripController extends Controller
         // Group seats by row for intuitive bus visual matrix
         $seatsByRow = $trip->bus->busSeats->groupBy('row');
         $bookedSeatIds = $trip->getBookedSeatIds();
+        $confirmedSeatIds = $trip->getConfirmedBookedSeatIds();
+        $heldSeatIds = $trip->getHeldSeatIds();
 
-        return view('trips.show', compact('trip', 'seatsByRow', 'bookedSeatIds'));
+        return view('trips.show', compact('trip', 'seatsByRow', 'bookedSeatIds', 'confirmedSeatIds', 'heldSeatIds'));
     }
 }

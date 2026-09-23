@@ -15,6 +15,7 @@ use App\Notifications\PaymentReceivedNotification;
 use App\Services\Payment\MidtransPaymentGateway;
 use App\Services\Payment\PaymentGatewayInterface;
 use App\Services\Payment\PaymentResult;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -23,6 +24,8 @@ use Tests\TestCase;
 
 class Sprint5CommercialGradeTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected function createTripWithSeats(int $seatsCount = 4): array
     {
         $bus = Bus::factory()->create([

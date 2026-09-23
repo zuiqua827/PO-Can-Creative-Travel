@@ -7,6 +7,7 @@ use App\Http\Requests\Admin\TripRequest;
 use App\Models\Bus;
 use App\Models\Route;
 use App\Models\Trip;
+use App\Services\Audit\AuditLogger;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -95,8 +96,13 @@ class TripController extends Controller
             return back()->with('error', "Jadwal {$trip->trip_code} memiliki riwayat pesanan pelanggan dan tidak boleh dihapus. Anda dapat mengubah statusnya menjadi 'cancelled' (Dibatalkan).");
         }
 
+        $tripId = $trip->id;
         $code = $trip->trip_code;
         $trip->delete();
+
+        AuditLogger::log('trip_deleted', 'trip', $tripId, [
+            'trip_code' => $code,
+        ]);
 
         return redirect()->route('admin.trips.index')
             ->with('success', "Jadwal {$code} berhasil dihapus.");

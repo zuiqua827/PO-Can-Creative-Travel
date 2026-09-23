@@ -103,24 +103,31 @@ class DashboardController extends Controller
             ->orderBy('departure_at', 'asc')
             ->get();
 
-        // 7-Day Daily Revenue & Booking Trends (Authoritative SQL Data)
+        // 7-Day Daily Revenue & Booking Trends (Optimized Single Aggregation Query)
+        $sevenDaysAgo = Carbon::today()->subDays(6)->startOfDay();
+        $trendsData = Order::select(
+            DB::raw('DATE(created_at) as date_key'),
+            DB::raw('SUM(CASE WHEN payment_status = "paid" THEN total_amount ELSE 0 END) as revenue'),
+            DB::raw('COUNT(id) as bookings')
+        )
+            ->where('created_at', '>=', $sevenDaysAgo)
+            ->groupBy('date_key')
+            ->get()
+            ->keyBy('date_key');
+
         $dailyTrends = [];
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $dateKey = $date->format('Y-m-d');
             $dayLabel = $date->format('D, d M');
 
-            $dayRevenue = (float) Order::where('payment_status', 'paid')
-                ->whereDate('created_at', $dateKey)
-                ->sum('total_amount');
-
-            $dayBookings = Order::whereDate('created_at', $dateKey)->count();
+            $matchedRecord = $trendsData->get($dateKey);
 
             $dailyTrends[] = [
                 'date' => $dateKey,
                 'label' => $dayLabel,
-                'revenue' => $dayRevenue,
-                'bookings' => $dayBookings,
+                'revenue' => $matchedRecord ? (float) $matchedRecord->revenue : 0.0,
+                'bookings' => $matchedRecord ? (int) $matchedRecord->bookings : 0,
             ];
         }
 

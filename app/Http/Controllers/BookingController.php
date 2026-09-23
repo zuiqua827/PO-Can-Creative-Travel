@@ -35,7 +35,7 @@ class BookingController extends Controller
                 ->with('error', 'Jadwal perjalanan ini sudah tidak dapat dipesan.');
         }
 
-        $seatIdsRaw = $request->input('seat_ids');
+        $seatIdsRaw = $request->input('seat_ids') ?? old('seats');
         $seatIds = is_array($seatIdsRaw) ? $seatIdsRaw : explode(',', (string) $seatIdsRaw);
         $seatIds = array_filter(array_map('intval', $seatIds));
 
@@ -215,6 +215,12 @@ class BookingController extends Controller
                     $order->payment->update(['status' => 'expired']);
                 }
             });
+        }
+
+        // If order is already paid, redirect directly to order details
+        if ($order->payment_status === 'paid') {
+            return redirect()->route('orders.show', $order)
+                ->with('info', 'Pesanan ini sudah lunas. Anda dapat melihat tiket dan detail pesanan Anda di sini.');
         }
 
         return view('booking.payment', compact('order'));

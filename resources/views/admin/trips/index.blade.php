@@ -136,7 +136,18 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="py-8 text-center text-slate-400">Belum ada jadwal keberangkatan yang dibuat.</td>
+                            <td colspan="8" class="py-12 text-center">
+                                <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                                <h4 class="font-bold text-slate-700 text-sm">Belum ada jadwal keberangkatan</h4>
+                                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Buat jadwal perjalanan baru untuk membuka pemesanan tiket customer.</p>
+                                <a href="{{ route('admin.trips.create') }}" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs transition">
+                                    + Tambah Jadwal Baru
+                                </a>
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

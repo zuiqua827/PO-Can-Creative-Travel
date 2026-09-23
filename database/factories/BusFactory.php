@@ -14,7 +14,7 @@ class BusFactory extends Factory
 
     public function definition(): array
     {
-        $code = 'CAN-'.strtoupper(fake()->bothify('??-##'));
+        $code = 'CAN-'.strtoupper(fake()->unique()->bothify('??-##')).'-'.fake()->numberBetween(100, 999);
 
         return [
             'name' => 'CAN '.fake()->randomElement(['Royal Suite', 'Executive Grand', 'Sleeper Dream', 'VIP Line']).' '.fake()->numberBetween(10, 99),

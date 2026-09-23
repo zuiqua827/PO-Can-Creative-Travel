@@ -33,14 +33,14 @@
     </script>
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Alpine.js (Strict CSP Compliant Build) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/csp@3.14.8/dist/cdn.min.js"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
@@ -56,8 +56,8 @@
                 </span>
                 <span>Portal Pemesanan Tiket Bus Online Terpercaya — <strong>CAN Travel</strong></span>
             </div>
-            <div class="flex items-center space-x-4 text-slate-400 text-[11px]">
-                <span>Pusat Bantuan: <strong class="text-white">0812-3456-7890</strong></span>
+            <div class="flex items-center space-x-4 text-slate-400 text-[11px] whitespace-nowrap">
+                <span class="whitespace-nowrap">Pusat Bantuan: <strong class="text-white">0812-3456-7890</strong></span>
                 <span class="hidden sm:inline">|</span>
                 <span class="hidden sm:inline">support@cantravel.co.id</span>
             </div>
@@ -68,7 +68,7 @@
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm" x-data="{ mobileMenuOpen: false }">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
-                
+
                 <!-- CAN Travel Brand Logo -->
                 <div class="flex items-center">
                     <a href="{{ route('home') }}" class="group focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-xl" aria-label="Beranda CAN Travel">
@@ -78,23 +78,23 @@
 
                 <!-- Desktop Navigation Links -->
                 <nav class="hidden md:flex items-center space-x-7" aria-label="Navigasi Utama">
-                    <a href="{{ route('home') }}" 
+                    <a href="{{ route('home') }}"
                         class="text-sm font-semibold transition-colors {{ request()->routeIs('home') ? 'text-brand-600 font-bold' : 'text-slate-600 hover:text-slate-900' }}">
                         Beranda
                     </a>
-                    <a href="{{ route('trips.index') }}" 
+                    <a href="{{ route('trips.index') }}"
                         class="text-sm font-semibold transition-colors {{ request()->routeIs('trips.*') ? 'text-brand-600 font-bold' : 'text-slate-600 hover:text-slate-900' }}">
                         Jadwal & Tiket
                     </a>
-                    <a href="{{ route('home') }}#fleet" 
+                    <a href="{{ route('home') }}#fleet"
                         class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                         Armada
                     </a>
-                    <a href="{{ route('home') }}#facilities" 
+                    <a href="{{ route('home') }}#facilities"
                         class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                         Fasilitas
                     </a>
-                    <a href="{{ route('home') }}#faq" 
+                    <a href="{{ route('home') }}#faq"
                         class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
                         Bantuan
                     </a>
@@ -104,7 +104,7 @@
                 <div class="hidden md:flex items-center space-x-4">
                     @auth
                         @if(auth()->user()->isAdmin())
-                            <a href="{{ route('admin.dashboard') }}" 
+                            <a href="{{ route('admin.dashboard') }}"
                                 class="inline-flex items-center px-3.5 py-2 rounded-xl text-xs font-bold uppercase tracking-wider bg-slate-900 text-white hover:bg-slate-800 transition shadow-sm">
                                 <svg class="w-4 h-4 mr-1.5 text-brand-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
@@ -116,7 +116,7 @@
 
                         <!-- Customer Dropdown Menu -->
                         <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" @click.away="open = false" 
+                            <button id="user-menu-btn" @click="open = !open" @click.away="open = false"
                                 class="flex items-center space-x-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition focus:outline-none focus:ring-2 focus:ring-brand-500"
                                 :aria-expanded="open" aria-haspopup="true">
                                 <div class="w-8 h-8 rounded-xl bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-xs shadow-inner">
@@ -128,13 +128,13 @@
                                 </svg>
                             </button>
 
-                            <div x-show="open" 
-                                 x-transition:enter="transition ease-out duration-150" 
-                                 x-transition:enter-start="opacity-0 scale-95" 
-                                 x-transition:enter-end="opacity-100 scale-100" 
-                                 x-transition:leave="transition ease-in duration-100" 
-                                 x-transition:leave-start="opacity-100 scale-100" 
-                                 x-transition:leave-end="opacity-0 scale-95" 
+                            <div id="user-menu-dropdown" x-show="open"
+                                 x-transition:enter="transition ease-out duration-150"
+                                 x-transition:enter-start="opacity-0 scale-95"
+                                 x-transition:enter-end="opacity-100 scale-100"
+                                 x-transition:leave="transition ease-in duration-100"
+                                 x-transition:leave-start="opacity-100 scale-100"
+                                 x-transition:leave-end="opacity-0 scale-95"
                                  class="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 divide-y divide-slate-100"
                                  style="display: none;" role="menu">
                                 <div class="px-4 py-3">
@@ -181,7 +181,7 @@
 
                 <!-- Mobile Menu Button -->
                 <div class="flex items-center md:hidden">
-                    <button @click="mobileMenuOpen = !mobileMenuOpen" 
+                    <button id="mobile-nav-toggle" @click="mobileMenuOpen = !mobileMenuOpen"
                         class="p-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
                         aria-label="Buka Menu Navigasi" :aria-expanded="mobileMenuOpen">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -194,11 +194,11 @@
         </div>
 
         <!-- Mobile Navigation Menu -->
-        <div x-show="mobileMenuOpen" 
+        <div id="mobile-nav-menu" x-show="mobileMenuOpen"
              x-transition:enter="transition ease-out duration-150"
              x-transition:enter-start="opacity-0 -translate-y-2"
              x-transition:enter-end="opacity-100 translate-y-0"
-             class="md:hidden border-t border-slate-200 bg-white px-5 pt-4 pb-6 space-y-3" 
+             class="md:hidden border-t border-slate-200 bg-white px-5 pt-4 pb-6 space-y-3"
              style="display: none;">
             <a href="{{ route('home') }}" class="block text-base font-bold py-2 text-slate-800 hover:text-brand-600">Beranda</a>
             <a href="{{ route('trips.index') }}" class="block text-base font-bold py-2 text-slate-800 hover:text-brand-600">Jadwal & Tiket</a>
@@ -283,7 +283,7 @@
     <footer class="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800 mt-20" aria-label="Footer Resmi CAN Travel">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
-                
+
                 <!-- Brand Info -->
                 <div class="space-y-4">
                     <x-logo size="md" variant="light" />
@@ -349,8 +349,39 @@
                 </div>
             </div>
         </div>
-    </footer>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Resilient mobile menu handler
+        const mobileToggle = document.getElementById('mobile-nav-toggle');
+        const mobileMenu = document.getElementById('mobile-nav-menu');
+        if (mobileToggle && mobileMenu) {
+            mobileToggle.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = window.getComputedStyle(mobileMenu).display === 'none';
+                mobileMenu.style.display = isHidden ? 'block' : 'none';
+                mobileToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+        }
 
+        // Resilient user dropdown menu handler
+        const userBtn = document.getElementById('user-menu-btn');
+        const userDropdown = document.getElementById('user-menu-dropdown');
+        if (userBtn && userDropdown) {
+            userBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                const isHidden = window.getComputedStyle(userDropdown).display === 'none';
+                userDropdown.style.display = isHidden ? 'block' : 'none';
+                userBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+            });
+            document.addEventListener('click', function(e) {
+                if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
+                    userDropdown.style.display = 'none';
+                    userBtn.setAttribute('aria-expanded', 'false');
+                }
+            });
+        }
+    });
+    </script>
     @stack('scripts')
 </body>
 </html>

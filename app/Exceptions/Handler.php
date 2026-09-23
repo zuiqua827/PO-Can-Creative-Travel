@@ -35,6 +35,13 @@ class Handler extends ExceptionHandler
         'current_password',
         'password',
         'password_confirmation',
+        'token',
+        'server_key',
+        'client_key',
+        'secret',
+        'signature',
+        'cvv',
+        'card_number',
     ];
 
     /**

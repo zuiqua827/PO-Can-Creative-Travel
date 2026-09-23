@@ -76,7 +76,32 @@ class Trip extends Model
     }
 
     /**
-     * Get IDs of seats that are currently booked for this trip.
+     * Get IDs of seats that are confirmed/paid (BOOKED).
+     */
+    public function getConfirmedBookedSeatIds(): array
+    {
+        return OrderItem::whereHas('order', function ($query) {
+            $query->where('trip_id', $this->id)
+                ->where('status', '!=', 'cancelled')
+                ->where('payment_status', 'paid');
+        })->pluck('bus_seat_id')->toArray();
+    }
+
+    /**
+     * Get IDs of seats that are temporarily held awaiting payment (HELD).
+     */
+    public function getHeldSeatIds(): array
+    {
+        return OrderItem::whereHas('order', function ($query) {
+            $query->where('trip_id', $this->id)
+                ->where('status', '!=', 'cancelled')
+                ->where('payment_status', 'unpaid')
+                ->where('expires_at', '>', now());
+        })->pluck('bus_seat_id')->toArray();
+    }
+
+    /**
+     * Get IDs of seats that are currently unavailable (either BOOKED or HELD).
      * Paid/confirmed orders hold seats permanently (BOOKED).
      * Unpaid orders hold seats only until expires_at (HELD).
      * Cancelled and expired orders never hold seats (RELEASED / AVAILABLE).

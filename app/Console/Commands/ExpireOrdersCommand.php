@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Order;
 use App\Notifications\BookingExpiredNotification;
+use App\Services\Audit\AuditLogger;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -64,6 +65,11 @@ class ExpireOrdersCommand extends Command
                                     'expired_at' => now(),
                                 ]);
                             }
+
+                            AuditLogger::log('order_expired_by_scheduler', 'order', $lockedOrder->id, [
+                                'order_code' => $lockedOrder->order_code,
+                                'expired_at' => now()->toIso8601String(),
+                            ]);
 
                             Log::info("Order expired automatically: {$lockedOrder->order_code} (Seats released)");
                         });

@@ -86,7 +86,18 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="py-8 text-center text-slate-400">Belum ada armada bus yang terdaftar.</td>
+                            <td colspan="6" class="py-12 text-center">
+                                <div class="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 mx-auto flex items-center justify-center mb-3">
+                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                                    </svg>
+                                </div>
+                                <h4 class="font-bold text-slate-700 text-sm">Belum ada armada bus</h4>
+                                <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Daftarkan armada bus baru beserta konfigurasi denah kursinya.</p>
+                                <a href="{{ route('admin.buses.create') }}" class="mt-4 inline-flex items-center px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs transition">
+                                    + Tambah Armada Baru
+                                </a>
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>

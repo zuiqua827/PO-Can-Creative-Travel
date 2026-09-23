@@ -23,7 +23,7 @@ class BookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'seats' => ['required', 'array', 'min:1'],
+            'seats' => ['required', 'array', 'min:1', 'max:5'],
             'seats.*' => ['required', 'integer', 'exists:bus_seats,id'],
             'passengers' => ['required', 'array'],
             'passengers.*.name' => ['required', 'string', 'max:255'],
@@ -44,6 +44,7 @@ class BookingRequest extends FormRequest
         return [
             'seats.required' => 'Pilihan kursi tidak boleh kosong.',
             'seats.min' => 'Pilih minimal 1 kursi.',
+            'seats.max' => 'Maksimal pemesanan adalah 5 kursi per transaksi.',
             'passengers.required' => 'Data penumpang wajib diisi.',
             'passengers.*.name.required' => 'Nama lengkap setiap penumpang wajib diisi.',
             'passengers.*.phone.required' => 'Nomor WhatsApp / telepon penumpang wajib diisi.',

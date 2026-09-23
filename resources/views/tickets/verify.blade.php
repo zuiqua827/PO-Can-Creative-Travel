@@ -3,6 +3,23 @@
 @section('title', 'Verifikasi Tiket — CAN Travel')
 @section('meta_description', 'Portal verifikasi resmi E-Tiket dan boarding pass penumpang bus CAN Travel.')
 
+@push('styles')
+<style>
+    @media print {
+        header, footer, nav, aside, .no-print {
+            display: none !important;
+        }
+        body {
+            background-color: white !important;
+            color: black !important;
+        }
+        .shadow-xl {
+            box-shadow: none !important;
+        }
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-slate-100 py-10 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
     <div class="max-w-lg w-full">
@@ -94,7 +111,7 @@
                         <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
                             <span class="text-slate-400 block font-medium">Armada Bus</span>
                             <strong class="text-slate-800 font-bold">{{ $order->trip->bus->name }}</strong>
-                            <span class="text-[11px] text-slate-500 block mt-0.5">{{ $order->trip->bus->type }} ({{ $order->trip->bus->plate_number }})</span>
+                            <span class="text-[11px] text-slate-500 block mt-0.5">{{ $order->trip->bus->type }} ({{ $order->trip->bus->code }})</span>
                         </div>
                         <div class="p-3 rounded-xl bg-slate-50 border border-slate-100">
                             <span class="text-slate-400 block font-medium">Status Bayar</span>
@@ -116,6 +133,17 @@
                         <span>Waktu Pengecekan:</span>
                         <span class="font-mono">{{ $verifiedAt->format('d/m/Y H:i:s') }} WIB</span>
                     </div>
+
+                    @if($isValid)
+                        <div class="pt-3 no-print">
+                            <button type="button" onclick="window.print()" class="w-full py-2.5 px-4 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition flex items-center justify-center space-x-2">
+                                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                </svg>
+                                <span>Cetak Bukti Verifikasi</span>
+                            </button>
+                        </div>
+                    @endif
                 </div>
             @else
                 <div class="p-8 text-center">

@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel — CAN Travel')</title>
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
-    
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Alpine.js (Strict CSP Compliant Build) -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/csp@3.14.8/dist/cdn.min.js"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
@@ -20,21 +20,23 @@
 <body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen flex" x-data="{ sidebarOpen: false }">
 
     <!-- Mobile Backdrop -->
-    <div x-show="sidebarOpen" 
-         @click="sidebarOpen = false" 
-         class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm md:hidden" 
+    <div id="admin-mobile-backdrop"
+         x-show="sidebarOpen"
+         @click="sidebarOpen = false"
+         class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm md:hidden"
          style="display: none;"></div>
 
     <!-- Admin Sidebar -->
-    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" 
-           class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:flex md:flex-col md:w-64 border-r border-slate-800">
-        
+    <aside id="admin-sidebar"
+           :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+           class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:flex md:flex-col md:w-64 border-r border-slate-800 -translate-x-full md:translate-x-0">
+
         <!-- Sidebar Brand -->
         <div class="h-20 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3">
                 <x-logo size="sm" variant="light" :withSubtitle="false" />
             </a>
-            <button @click="sidebarOpen = false" class="text-slate-400 hover:text-white md:hidden text-2xl" aria-label="Tutup Menu">
+            <button id="admin-sidebar-close" @click="sidebarOpen = false" class="text-slate-400 hover:text-white md:hidden text-2xl" aria-label="Tutup Menu">
                 &times;
             </button>
         </div>
@@ -42,7 +44,7 @@
         <!-- Sidebar Navigation -->
         <div class="flex-1 overflow-y-auto py-6 px-4 space-y-1">
             <div class="text-[11px] font-bold uppercase tracking-wider text-slate-500 px-3 mb-2">Menu Utama</div>
-            
+
             <a href="{{ route('admin.dashboard') }}" class="flex items-center px-3.5 py-2.5 rounded-xl text-sm font-semibold transition {{ request()->routeIs('admin.dashboard') ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
                 <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
@@ -113,7 +115,7 @@
         <!-- Admin Top Navigation Bar -->
         <header class="h-20 bg-white border-b border-slate-200 px-6 sm:px-8 flex items-center justify-between shadow-sm sticky top-0 z-30">
             <div class="flex items-center">
-                <button @click="sidebarOpen = true" class="text-slate-600 hover:text-slate-900 md:hidden mr-4" aria-label="Buka Menu Sidebar">
+                <button id="admin-sidebar-open" @click="sidebarOpen = true" class="text-slate-600 hover:text-slate-900 md:hidden mr-4" aria-label="Buka Menu Sidebar">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                     </svg>
@@ -164,6 +166,41 @@
         </main>
     </div>
 
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebar = document.getElementById('admin-sidebar');
+        const openBtn = document.getElementById('admin-sidebar-open');
+        const closeBtn = document.getElementById('admin-sidebar-close');
+        const backdrop = document.getElementById('admin-mobile-backdrop');
+
+        function openSidebar() {
+            if (sidebar) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+            }
+            if (backdrop) {
+                backdrop.style.display = 'block';
+            }
+        }
+
+        function closeSidebar() {
+            if (sidebar) {
+                sidebar.classList.add('-translate-x-full');
+                sidebar.classList.remove('translate-x-0');
+            }
+            if (backdrop) {
+                backdrop.style.display = 'none';
+            }
+        }
+
+        if (openBtn) openBtn.addEventListener('click', openSidebar);
+        if (closeBtn) closeBtn.addEventListener('click', closeSidebar);
+        if (backdrop) backdrop.addEventListener('click', closeSidebar);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeSidebar();
+        });
+    });
+    </script>
     @stack('scripts')
 </body>
 </html>

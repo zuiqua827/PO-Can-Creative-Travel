@@ -11,12 +11,15 @@ use App\Models\Route;
 use App\Models\Trip;
 use App\Models\User;
 use App\Services\Payment\FakePaymentGateway;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class Sprint4HardeningTest extends TestCase
 {
+    use DatabaseTransactions;
+
     protected function createTripWithSeats(int $seatsCount = 5): array
     {
         $bus = Bus::factory()->create([

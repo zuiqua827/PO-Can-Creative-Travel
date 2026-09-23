@@ -6,7 +6,7 @@
 @section('content')
 <div class="bg-slate-50 py-12">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <!-- Multi-Step Progress Tracker (Step 4) -->
         <nav aria-label="Progress Pemesanan" class="mb-8">
             <ol class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-bold">
@@ -74,6 +74,27 @@
                     </a>
                 </div>
             </div>
+        @elseif($order->payment_status === 'paid')
+            <!-- Paid / Confirmed Notice -->
+            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-3xl p-6 sm:p-8 text-center mb-8 shadow-sm">
+                <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                </div>
+                <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Pembayaran Berhasil (Lunas)
+                </span>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 mt-3">Pembayaran Telah Dikonfirmasi</h1>
+                <p class="text-xs sm:text-sm text-slate-600 max-w-md mx-auto mt-2">
+                    Pesanan dengan kode <strong class="font-mono text-slate-900">{{ $order->order_code }}</strong> sudah lunas dan e-tiket Anda telah terbit.
+                </p>
+                <div class="mt-6 flex flex-wrap justify-center gap-3">
+                    <a href="{{ route('orders.show', $order) }}" class="px-6 py-3 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md transition">
+                        Lihat E-Tiket & Detail Pesanan →
+                    </a>
+                </div>
+            </div>
         @else
             <!-- Status Header Card (Active Pending Order) -->
             <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center mb-8">
@@ -82,11 +103,11 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
                 </div>
-                
+
                 <span class="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-50 text-amber-800 border border-amber-300">
                     Menunggu Pembayaran
                 </span>
-                
+
                 <h1 class="text-2xl sm:text-3xl font-black text-slate-900 mt-3">Pesanan Berhasil Dibuat</h1>
                 <p class="text-xs text-slate-500 mt-1">Kode Pesanan: <strong class="font-mono text-slate-900">{{ $order->order_code }}</strong></p>
 
@@ -118,7 +139,7 @@
             <!-- Order Summary Brief Card -->
             <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-4 mb-8">
                 <h2 class="font-black text-slate-900 text-base pb-3 border-b border-slate-100">Ringkasan Tiket Perjalanan</h2>
-                
+
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                     <div>
                         <span class="text-slate-400 block font-medium">Rute Perjalanan</span>
@@ -179,12 +200,15 @@
                             <span class="text-xs text-slate-500">Penerima: <strong>CAN TRAVEL INDONESIA</strong></span>
                         </div>
 
-                        <button type="button" @click="navigator.clipboard.writeText('827708{{ substr($order->order_code, -6) }}'); copied = true; setTimeout(() => copied = false, 2000)" 
+                        <button type="button"
+                            id="copy-va-btn"
+                            data-va="827708{{ substr($order->order_code, -6) }}"
+                            @click="navigator.clipboard.writeText('827708{{ substr($order->order_code, -6) }}'); copied = true; setTimeout(() => copied = false, 2000)"
                             class="px-4 py-2.5 rounded-xl text-xs font-bold border border-slate-300 hover:border-brand-500 bg-white text-slate-700 hover:text-brand-600 transition shadow-sm flex items-center space-x-1.5 focus:outline-none focus:ring-2 focus:ring-brand-500">
                             <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                             </svg>
-                            <span x-text="copied ? 'Tersalin!' : 'Salin Nomor'"></span>
+                            <span id="copy-va-text" x-text="copied ? 'Tersalin!' : 'Salin Nomor'">Salin Nomor</span>
                         </button>
                     </div>
                 </div>
@@ -212,13 +236,20 @@
                     Untuk kemudahan evaluasi technical test, Anda dapat langsung mengonfirmasi pembayaran secara instan tanpa transfer sungguhan. E-Tiket akan langsung diterbitkan secara otomatis.
                 </p>
 
-                <form action="{{ route('booking.processPayment', $order) }}" method="POST">
+                <form action="{{ route('booking.processPayment', $order) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true">
                     @csrf
-                    <button type="submit" class="w-full py-4 px-6 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm shadow-xl shadow-emerald-600/30 transition flex items-center justify-center space-x-2">
-                        <svg class="w-5 h-5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <button type="submit"
+                            :disabled="submitting"
+                            :class="submitting ? 'opacity-70 cursor-not-allowed' : 'hover:bg-emerald-500'"
+                            class="w-full py-4 px-6 rounded-2xl bg-emerald-600 text-white font-black text-sm shadow-xl shadow-emerald-600/30 transition flex items-center justify-center space-x-2">
+                        <svg x-show="!submitting" class="w-5 h-5 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
-                        <span>Konfirmasi Pembayaran (Simulasi Instan)</span>
+                        <svg x-show="submitting" x-cloak class="w-5 h-5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span x-text="submitting ? 'Memproses Konfirmasi...' : 'Konfirmasi Pembayaran (Simulasi Instan)'">Konfirmasi Pembayaran (Simulasi Instan)</span>
                     </button>
                 </form>
             </div>
@@ -267,6 +298,22 @@ document.addEventListener('DOMContentLoaded', function () {
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
+
+    const copyBtn = document.getElementById('copy-va-btn');
+    if (copyBtn) {
+        copyBtn.addEventListener('click', function() {
+            const va = copyBtn.getAttribute('data-va');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(va).then(() => {
+                    const txt = document.getElementById('copy-va-text');
+                    if (txt) {
+                        txt.textContent = 'Tersalin!';
+                        setTimeout(() => { txt.textContent = 'Salin Nomor'; }, 2000);
+                    }
+                }).catch(() => {});
+            }
+        });
+    }
 });
 </script>
 @endpush

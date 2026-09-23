@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\RouteRequest;
 use App\Models\Route;
+use App\Services\Audit\AuditLogger;
 
 class RouteController extends Controller
 {
@@ -47,8 +48,17 @@ class RouteController extends Controller
 
     public function destroy(Route $route)
     {
+        if ($route->trips()->exists()) {
+            return back()->with('error', "Rute {$route->origin} → {$route->destination} masih terkait dengan jadwal perjalanan dan tidak dapat dihapus. Nonaktifkan status rute jika tidak lagi melayani rute ini.");
+        }
+
+        $routeId = $route->id;
         $name = "{$route->origin} → {$route->destination}";
         $route->delete();
+
+        AuditLogger::log('route_deleted', 'route', $routeId, [
+            'route_name' => $name,
+        ]);
 
         return redirect()->route('admin.routes.index')
             ->with('success', "Rute {$name} berhasil dihapus.");
