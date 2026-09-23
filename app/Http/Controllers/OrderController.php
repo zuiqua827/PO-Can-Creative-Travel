@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Notifications\BookingCancelledNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -82,7 +84,15 @@ class OrderController extends Controller
             if ($order->payment) {
                 $order->payment->update(['status' => 'failed']);
             }
+
+            Log::info("Order cancelled by customer: {$order->order_code} (User ID: {$order->user_id})");
         });
+
+        try {
+            $order->user?->notify(new BookingCancelledNotification($order));
+        } catch (\Throwable $e) {
+            Log::error("Failed to notify user for cancelled order {$order->order_code}: ".$e->getMessage());
+        }
 
         return back()->with('success', 'Pesanan telah berhasil dibatalkan dan kursi Anda telah dilepaskan kembali.');
     }

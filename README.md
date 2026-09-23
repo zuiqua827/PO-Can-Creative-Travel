@@ -1,75 +1,35 @@
-# CAN Travel — Bus Ticket Reservation System
+# CAN Travel — Bus Ticket Booking Application
 
-**CAN Travel** adalah platform pemesanan tiket bus antarkota modern, andal, dan aman yang dibangun dengan **Laravel 10**, **PHP 8.4+**, **MySQL**, **Blade**, **Tailwind CSS**, dan **Vite**. Platform ini dirancang untuk memudahkan calon penumpang dalam mencari jadwal bus secara real-time, memilih kursi interaktif, melakukan pemesanan transparan, menyelesaikan pembayaran dengan tenggat waktu otomatis, dan mencetak E-Tiket resmi.
+**CAN Travel** adalah platform pemesanan tiket bus antarkota modern, andal, aman, dan siap produksi (*production-hardened*) yang dibangun dengan **Laravel 10**, **PHP 8.4+**, **MySQL**, **Blade**, **Tailwind CSS**, dan **Vite**.
 
----
-
-## 1. Fitur Utama
-
-### A. Pengguna / Pelanggan (Customer Journey)
-- **Mesin Pencari Tiket Antarkota**: Filter berdasarkan kota asal, kota tujuan, tanggal keberangkatan, kelas bus (Executive, Royal Suite, Sleeper Bus, VIP), dan rentang harga.
-- **Peta Kursi Kabin Interaktif (Bus Seat Matrix)**: Denah kabin 2-2 interaktif dengan status real-time (*Tersedia*, *Dipilih [Brand Blue]*, *Terisi / Locked*).
-- **Alur Pemesanan 4 Langkah Transparan**:
-  - `01. Pilih Jadwal` → `02. Pilih Kursi` → `03. Data Penumpang` → `04. Pembayaran`.
-- **Perhitungan Harga Authoritative**: Total harga dihitung mutlak di sisi server berdasarkan jumlah kursi dan tarif resmi trip; input manipulasi client-side diabaikan.
-- **Proteksi Concurrency & Double-Booking**: Penguncian baris basis data (`lockForUpdate()`) di dalam transaksi atomik (`DB::transaction`) untuk mencegah dua pengguna memesan kursi yang sama secara bersamaan.
-- **Siklus Pembayaran & Batas Waktu Otomatis**:
-  - Batas waktu pembayaran 2 jam (`expires_at`).
-  - Hitung mundur interaktif (*live countdown timer*).
-  - Verifikasi kedaluwarsa di sisi backend: jika waktu habis, pesanan ditandai kedaluwarsa dan kursi dilepaskan kembali secara otomatis.
-- **Simulasi Pembayaran & Idempotensi**:
-  - Pembayaran aman dengan pencegahan duplikasi (*idempotent processing*).
-  - Mode sandbox simulasi 1-klik untuk pengujian teknis.
-- **E-Tiket & Boarding Pass Resmi**:
-  - Nomor pesanan unik berformat resmi: `CAN-YYYYMMDD-XXXXX`.
-  - Simulasi kode batang barcode, manifest lengkap penumpang per kursi, titik kumpul penjemputan/penurunan, dan tata letak siap cetak / simpan PDF (`window.print()`).
-- **Manajemen Pesanan & Pembatalan Transaksional**:
-  - Pelanggan dapat membatalkan pesanan yang belum dibayar; kursi langsung dilepaskan kembali secara transaksional.
-  - Pesanan yang sudah dibayar tidak dapat dibatalkan sembarangan tanpa otorisasi customer service.
-
-### B. Administrator (Admin Operations)
-- **Dashboard Operasional Real-Time**:
-  - Statistik langsung dari basis data tanpa hardcoded data: Total Pendapatan, Pesanan Hari Ini, Total Pesanan, Pending Pembayaran, Pesanan Dibatalkan, Jadwal Aktif, Keberangkatan Hari Ini, Total Armada, dan Total Pelanggan.
-  - Tabel keberangkatan hari ini dengan okupansi kursi bebas N+1 query (`withBookedSeatsCount`).
-- **Kelola Armada Bus & Kursi**:
-  - Manajemen armada (nama, kode bus, tipe kelas, fasilitas, kapasitas).
-  - Generator otomatis denah kursi 2-2.
-  - Pengaturan status kursi individual (*available, blocked, maintenance*).
-- **Kelola Rute & Jadwal Keberangkatan**:
-  - Manajemen rute antarkota dan tarif dasar.
-  - Penjadwalan keberangkatan armada bus.
-  - Proteksi integritas data: jadwal perjalanan yang sudah memiliki pesanan pelanggan dilindungi dari penghapusan sembarangan.
-- **Kelola Pesanan Pelanggan**:
-  - Pencarian fleksibel berdasarkan kode order, nama pelanggan, email, nomor telepon, atau nama penumpang.
-  - Filter berdasarkan status pemesanan, status pembayaran, dan tanggal transaksi.
-  - Pembaruan status pesanan terkontrol dengan validasi *state machine* transisi legal.
+Platform ini mengintegrasikan siklus hidup reservasi kursi server-authoritative, arsitektur pembayaran modular dengan abstraksi gateway, webhook asynchronous yang terverifikasi dan idempoten, otomatisasi kedaluwarsa pesanan via Laravel Scheduler, proteksi keamanan tingkat tinggi (Security Headers, Rate Limiting, IDOR safeguards), dashboard analitik operasional dengan ekspor CSV, serta boarding pass E-Tiket berbasis QR code verifikasi real-time.
 
 ---
 
-## 2. Tech Stack
+## 1. Project Overview
+
+CAN Travel memodernisasi pemesanan tiket bus antarkota dengan fokus utama pada keandalan transaksional dan keamanan data:
+- **Pelanggan**: Mencari rute bus, memilih kursi interaktif secara real-time, mengisi manifest penumpang, membayar dengan tenggat waktu otomatis, mendapatkan E-Tiket resmi dengan QR Code verifikasi.
+- **Kru & Konduktor**: Memindai QR Code boarding pass untuk verifikasi keabsahan tiket secara instan tanpa login atau manipulasi client.
+- **Administrator**: Memantau analitik KPI keuangan & operasional (Today, This Week, This Month), okupansi armada, rute terpopuler, mengelola armada bus & rute perjalanan, memfilter pesanan, dan mengekspor laporan transaksi ke format streaming CSV.
+
+---
+
+## 2. Technology Stack
 
 - **Backend Framework**: [Laravel 10.x](https://laravel.com)
 - **Bahasa Pemrograman**: PHP 8.3 / 8.4+
-- **Basis Data**: MySQL / MariaDB (InnoDB Engine dengan Relational Foreign Keys & Indeks Performa)
+- **Basis Data**: MySQL 8.0+ / MariaDB 10.4+ (InnoDB Engine dengan Relational Foreign Keys & Indeks Performa)
 - **ORM**: Native Eloquent ORM
 - **Frontend / Templating**: Laravel Blade Components
 - **CSS Framework**: Tailwind CSS 3.4
 - **Asset Bundler**: Vite 4.x
-- **Testing Engine**: PHPUnit / Laravel Feature Testing Suite
-- **Code Linter & Formatter**: Laravel Pint (PSR-12 standard)
+- **Testing Engine**: PHPUnit 10.x & Laravel Feature Testing Suite
+- **Code Formatter & Linter**: Laravel Pint (PSR-12 standard)
 
 ---
 
-## 3. Prasyarat Sistem
-
-- **PHP** >= 8.2 (direkomendasikan PHP 8.3 atau 8.4) dengan ekstensi: `pdo_mysql`, `mbstring`, `openssl`, `bcmath`, `curl`, `tokenizer`, `xml`
-- **Composer** >= 2.x
-- **MySQL** >= 8.0 atau **MariaDB** >= 10.4
-- **Node.js** >= 18.x dan **NPM** >= 9.x
-
----
-
-## 4. Panduan Instalasi Lokal
+## 3. Panduan Instalasi (Installation)
 
 1. **Clone Repositori**:
    ```bash
@@ -82,155 +42,290 @@
    composer install
    ```
 
-3. **Konfigurasi Environment**:
-   Salin berkas `.env.example` ke `.env`:
-   ```bash
-   cp .env.example .env
-   ```
-
-4. **Generate Application Key**:
-   ```bash
-   php artisan key:generate
-   ```
-
-5. **Konfigurasi Database MySQL**:
-   Buka berkas `.env` dan sesuaikan pengaturan database lokal Anda:
-   ```env
-   DB_CONNECTION=mysql
-   DB_HOST=127.0.0.1
-   DB_PORT=3306
-   DB_DATABASE=po_can_travel
-   DB_USERNAME=root
-   DB_PASSWORD=
-   ```
-
-6. **Migrasi Database & Seeding**:
-   Jalankan migrasi skema tabel beserta data awal armada, rute, dan jadwal:
-   ```bash
-   php artisan migrate --seed
-   ```
-
-7. **Pasang Dependensi Frontend & Kompilasi Asset**:
+3. **Pasang Dependensi Frontend & Build Aset**:
    ```bash
    npm install
    npm run build
    ```
 
-8. **Jalankan Server Lokal**:
+4. **Salin Berkas Environment**:
    ```bash
-   php artisan serve
+   cp .env.example .env
    ```
-   Aplikasi dapat diakses melalui peramban web di: `http://127.0.0.1:8000`.
+
+5. **Generate Kunci Aplikasi**:
+   ```bash
+   php artisan key:generate
+   ```
 
 ---
 
-## 5. Kredensial Pengujian (Demo Accounts)
+## 4. Konfigurasi Environment (.env)
 
-Sistem telah dilengkapi dengan akun bawaan seeder untuk pengujian teknis:
+Pastikan konfigurasi `.env` telah disesuaikan:
 
-| Role | Email | Password | Akses |
-|---|---|---|---|
-| **Administrator** | `admin@pocan.com` | `password` | Panel Admin (`/admin/dashboard`), Kelola Armada, Rute, Jadwal, Pesanan, Pelanggan |
-| **Customer** | `budi@gmail.com` | `password` | Pencarian jadwal, pemilihan kursi, checkout, pembayaran, riwayat pesanan, profil |
+```env
+APP_NAME="CAN Travel"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://localhost:8000
 
----
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=po_can_travel
+DB_USERNAME=root
+DB_PASSWORD=
 
-## 6. Arsitektur Keamanan & Validasi
+# Logging & Testing
+LOG_CHANNEL=stack
+MAIL_MAILER=log
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
 
-1. **Otorisasi Ketat (OrderPolicy)**:
-   - Pelanggan hanya dapat melihat dan membatalkan pesanan milik mereka sendiri (`403 Forbidden` jika mencoba mengakses pesanan pengguna lain / IDOR protection).
-2. **Kalkulasi Harga Server-Authoritative**:
-   - Harga tiket dan total bayar selalu dihitung di backend berdasarkan tarif trip di database dikali jumlah kursi. Data harga dari form request client tidak pernah dipercaya.
-3. **Pencegahan Double-Booking (Concurrency Lock)**:
-   - `OrderItem::whereIn(...)->lockForUpdate()` di dalam transaksi database memastikan tidak ada dua transaksi paralel yang dapat memesan kursi yang sama.
-4. **Validasi Kursi Armada**:
-   - Sistem memverifikasi bahwa kursi yang dipilih benar-benar terdaftar pada armada bus trip bersangkutan dan berstatus operasional (`status = 'available'`).
-5. **State Machine Transisi Status**:
-   - Mencegah perubahan status tidak valid (contoh: pesanan `cancelled` tidak bisa langsung menjadi `paid`, pesanan `completed` tidak bisa diubah kembali menjadi `pending`).
-6. **Form Request Validation**:
-   - Seluruh endpoint input data pengguna tervalidasi menggunakan Form Request khusus di `app/Http/Requests`.
+# Payment Gateway Configuration
+PAYMENT_GATEWAY=simulation
+PAYMENT_WEBHOOK_SECRET=your_secure_webhook_secret_here
+PAYMENT_SIMULATION_AUTO_CONFIRM=false
 
----
+# Placeholders for Future Production Payment Gateways (Optional)
+MIDTRANS_SERVER_KEY=
+MIDTRANS_CLIENT_KEY=
+MIDTRANS_IS_PRODUCTION=false
 
-## 7. Automated Testing
-
-Jalankan test suite menggunakan perintah:
-```bash
-php artisan test
+XENDIT_SECRET_KEY=
+XENDIT_PUBLIC_KEY=
 ```
 
-### Cakupan Pengujian (23 Feature & Unit Tests):
-1. `test_user_registration_success`
-2. `test_user_registration_validation_fails`
-3. `test_user_login_success`
-4. `test_user_login_with_invalid_credentials_fails`
-5. `test_public_pages_load_correctly` (Memastikan branding CAN Travel muncul dan tidak ada PO CAN Travel)
-6. `test_trip_search_filters_correctly`
-7. `test_unavailable_trip_is_not_bookable`
-8. `test_expired_trip_cannot_be_booked`
-9. `test_unavailable_seat_cannot_be_selected`
-10. `test_cancelled_order_releases_seats`
-11. `test_expired_order_releases_seats`
-12. `test_customer_cannot_access_another_customer_order` (IDOR Prevention)
-13. `test_customer_cannot_modify_another_customer_order`
-14. `test_payment_cannot_be_repeated_idempotency` (Idempotent Payment)
-15. `test_expired_payment_cannot_be_completed`
-16. `test_invalid_order_status_transition_prevented`
-17. `test_admin_order_filtering_by_status_and_date`
-18. `test_admin_authorization_enforced`
-19. `test_order_creation_calculates_price_server_side`
-20. `test_multiple_seat_booking_creates_manifest_records`
-21. `test_concurrent_seat_booking_is_prevented` (Concurrency Lock Test)
-22. `ExampleTest` (Unit)
-23. `ExampleTest` (Feature)
+---
+
+## 5. Database Setup & Migration
+
+Jalankan migrasi basis data secara terstruktur:
+
+```bash
+php artisan migrate
+```
+
+*Catatan Keamanan Basis Data*:
+- Seluruh migrasi bersifat non-destruktif dan *backward-compatible*.
+- Kolom `payments.payment_reference` dipertahankan untuk kompatibilitas riwayat transaksi.
+- Tabel `payments` telah diperkuat dengan kolom audit: `provider`, `provider_transaction_id`, `failed_at`, `expired_at`, `webhook_processed_at`, dan `metadata`.
+- Tabel `order_items` dilengkapi dengan kolom unik `ticket_token` untuk validasi QR tiket.
 
 ---
 
-## 8. Standar Kode & Format (Pint)
+## 6. Seeder & Akun Demo
 
-Format kode diperiksa dan distandarisasi menggunakan Laravel Pint:
+Untuk mengisi data awal armada bus, denah kursi, rute perjalanan, jadwal keberangkatan, dan pengguna:
+
 ```bash
+php artisan db:seed
+```
+
+### Akun Bawaan (Default Credentials):
+- **Administrator**:
+  - Email: `admin@cantravel.com`
+  - Password: `password`
+- **Customer / Penumpang**:
+  - Email: `budi@gmail.com`
+  - Password: `password`
+
+---
+
+## 7. Autentikasi & Keamanan Sesi
+
+- **Session Regeneration**: Sesi di-regenerate secara otomatis pada saat login untuk mencegah serangan *Session Fixation*.
+- **Password Hashing**: Menggunakan Bcrypt hashing dengan cast terproteksi.
+- **Log Peristiwa Keamanan**: Login gagal, login berhasil, dan logout dicatat ke sistem audit log dengan IP address pengguna.
+- **Proteksi Akses Admin**: Rute `/admin/*` dilindungi middleware ganda `['auth', 'admin']` (`AdminMiddleware`) dengan pencatatan upaya akses ilegal.
+
+---
+
+## 8. Alur Pemesanan Pelanggan (Customer Booking Flow)
+
+1. **Pencarian Jadwal (`/trips`)**: Pelanggan memfilter rute berdasarkan kota asal, tujuan, tanggal, dan kelas bus.
+2. **Peta Kursi Interaktif (`/trips/{trip}`)**: Denah kabin bus 2-2 interaktif menampilkan kursi *Tersedia*, *Dipilih*, atau *Terisi*.
+3. **Checkout & Manifest (`/trips/{trip}/checkout`)**: Input data manifest identitas penumpang untuk setiap kursi yang dipilih.
+4. **Pemesanan Atomik (`POST /trips/{trip}/booking`)**: Sistem server mengunci kursi dengan `lockForUpdate()`, membuat pesanan `CAN-YYYYMMDD-XXXXX`, membuat token tiket, dan menetapkan batas pembayaran 2 jam.
+5. **Pembayaran (`/orders/{order}/payment`)**: Menampilkan instruksi pembayaran, hitung mundur kedaluwarsa, dan form simulasi transfer / konfirmasi.
+6. **E-Tiket & Boarding Pass (`/my-orders/{order}`)**: E-Tiket terbit seketika dengan status lunas, nomor kursi, manifest penumpang, dan SVG QR Code verifikasi.
+
+---
+
+## 9. Arsitektur Pembayaran (Payment Architecture)
+
+> [!IMPORTANT]
+> **SIMULASI PEMBAYARAN vs REAL PAYMENT GATEWAY**:
+> Saat ini, aplikasi menggunakan gateway pengujian terkonfigurasi (**`FakePaymentGateway` / Simulation Mode**) untuk memfasilitasi pengujian menyeluruh, demonstrasi teknis, dan verifikasi alur otomatis. Integrasi gerbang pembayaran eksternal riil (seperti Midtrans atau Xendit) belum aktif pada lingkungan ini, namun kontrak arsitekturnya telah siap secara plug-and-play.
+
+### Struktur Arsitektur Pembayaran
+```
+app/Services/Payment/
+├── PaymentGatewayInterface.php   # Kontrak standar gateway
+├── PaymentResult.php             # Value Object status pembayaran
+└── FakePaymentGateway.php        # Implementasi simulasi & webhook
+```
+
+### Karakteristik & Keandalan Pembayaran:
+- **Authoritative & Server-Side**: Status pembayaran ditentukan sepenuhnya oleh server; manipulasi status dari sisi klien dicegah secara mutlak.
+- **Idempotensi**: Pemanggilan pembayaran ganda tidak akan menduplikasi status atau memotong saldo dua kali.
+- **Webhook Terproteksi (`POST /payments/webhook`)**:
+  - Dikecualikan dari CSRF token via `VerifyCsrfToken::$except`.
+  - Verifikasi tanda tangan kriptografis HMAC-SHA256 (`X-CAN-Signature`).
+  - Penguncian baris basis data (`lockForUpdate`) untuk memastikan atomisitas.
+  - Idempoten: Webhook yang dikirim ulang dengan payload sama direspon HTTP 200 `already_processed` tanpa efek samping duplikat.
+  - Menangani status: `settlement`/`success`, `failed`, `expired`, dan `pending`.
+
+---
+
+## 10. Siklus Hidup Pesanan (Order Lifecycle)
+
+| Status Pesanan (`orders.status`) | Status Bayar (`orders.payment_status`) | Keterangan |
+|---|---|---|
+| `pending` | `unpaid` | Pesanan baru dibuat, kursi di-*hold* selama 2 jam. |
+| `confirmed` | `paid` | Pembayaran lunas, E-Tiket terbit, kursi berstatus *booked*. |
+| `completed` | `paid` | Perjalanan bus telah selesai dilaksanakan. |
+| `cancelled` | `expired` | Waktu habis atau dibatalkan, kursi otomatis berstatus *released*. |
+
+---
+
+## 11. Siklus Hidup Kursi (Seat Reservation Lifecycle)
+
+Sistem menerapkan definisi 4 status reservasi kursi:
+1. **AVAILABLE**: Kursi belum memiliki reservasi aktif pada perjalanan terkait.
+2. **HELD**: Kursi direservasi oleh pesanan `pending` & `unpaid` yang belum melewati tenggat `expires_at`.
+3. **BOOKED**: Kursi telah dikonfirmasi dan dibayar lunas (`status = confirmed/completed`, `payment_status = paid`).
+4. **RELEASED**: Kursi yang sebelumnya dipesan telah dibatalkan (`status = cancelled`) atau kedaluwarsa (`payment_status = expired`), sehingga langsung tersedia kembali bagi calon penumpang lain.
+
+---
+
+## 12. Otomatisasi Kedaluwarsa & Laravel Scheduler
+
+Aplikasi memiliki perintah konsol otomatis untuk membersihkan pesanan yang telah melewati batas waktu pembayaran:
+
+```bash
+php artisan orders:expire
+```
+
+Perintah ini:
+1. Memindai pesanan berstatus `pending` & `unpaid` dengan `expires_at <= now()`.
+2. Menjalankan transaksi atomik dengan `lockForUpdate()`.
+3. Memperbarui status pesanan menjadi `cancelled` dan `payment_status` menjadi `expired`.
+4. Memperbarui pembayaran menjadi `expired` dengan stempel `expired_at`.
+5. Melepaskan kursi secara instan ke sistem pencarian tiket.
+6. Mengirimkan notifikasi kedaluwarsa kepada pelanggan.
+7. Aman dijalankan berulang kali (*idempotent*).
+
+### Menjalankan Scheduler di Lingkungan Lokal:
+```bash
+php artisan schedule:work
+```
+
+### Konfigurasi Scheduler di Server Produksi (Crontab):
+Tambahkan entri crontab berikut pada server Linux produksi:
+```cron
+* * * * * cd /path-ke-proyek/PO-CAN_Creative_Travel && php artisan schedule:run >> /dev/null 2>&1
+```
+
+---
+
+## 13. Dashboard Analitik Admin & Laporan CSV
+
+Akses portal admin melalui `/admin/dashboard`:
+- **Filter Periode Dinamis**: Saring metrik transaksi berdasarkan *Hari Ini*, *Minggu Ini*, *Bulan Ini*, atau *Semua Waktu*.
+- **Tingkat Okupansi Armada (Occupancy Rate %)**: Menghitung persentase keterisian kursi seluruh armada yang aktif beroperasi.
+- **Rute Terpopuler (Top Routes)**: Peringkat rute teratas berdasarkan volume pemesanan tiket lunas dan kontribusi pendapatan.
+- **Ekspor Laporan Transaksi CSV (`/admin/orders/export`)**:
+  - Menghasilkan berkas CSV terstruktur (`CAN_Travel_Laporan_Pesanan_{timestamp}.csv`).
+  - Menggunakan teknik streaming response (`StreamedResponse`) untuk memproses ribuan baris data tanpa membebani memori server (*zero memory bloat*).
+  - Dilengkapi UTF-8 BOM untuk kompatibilitas tampilan karakter di Microsoft Excel.
+  - Mematuhi filter aktif (tanggal, status order, status bayar, kata kunci pencarian).
+
+---
+
+## 14. Keamanan Sistem (Security Hardening)
+
+- **HTTP Security Headers Middleware (`SecurityHeaders.php`)**:
+  - `X-Content-Type-Options: nosniff`
+  - `X-Frame-Options: SAMEORIGIN`
+  - `Referrer-Policy: strict-origin-when-cross-origin`
+  - `Permissions-Policy: camera=(), microphone=(), geolocation=()`
+  - `Content-Security-Policy`: Kebijakan CSP yang kompatibel dengan Vite HMR, Google Fonts, dan SVG.
+- **Fine-Grained Rate Limiting (`RouteServiceProvider.php`)**:
+  - `login`: 5 percobaan / menit per IP + email.
+  - `register`: 5 pendaftaran / menit per IP.
+  - `booking`: 15 pemesanan / menit per pengguna / IP.
+  - `payment`: 15 transaksi / menit per pengguna / IP.
+  - `payment-webhook`: 60 panggilan / menit per IP.
+  - `ticket-verify`: 60 verifikasi / menit per IP.
+- **Proteksi IDOR (Insecure Direct Object References)**:
+  - Validasi otorisasi `OrderPolicy` pada rute pesanan dan pembayaran; pelanggan dilarang keras melihat atau membatalkan pesanan milik pelanggan lain (mengembalikan HTTP 403 Forbidden).
+- **Proteksi Informasi Sensitif**:
+  - Token tiket digital (`ticket_token`) digunakan sebagai kunci verifikasi QR Code publik alih-alih mengekspos ID rahasia atau identitas kredensial pelanggan.
+  - Tidak menyimpan nomor kartu kredit mentah, PIN, CVV, atau password perbankan.
+
+---
+
+## 15. E-Tiket & Verifikasi Boarding Pass QR Code
+
+- Setiap kursi penumpang memiliki token tiket unik: `TKT-2026-XXXXXXXXXX`.
+- **SVG QR Code Generator Murni (`QrCodeService.php`)**:
+  - Dihasilkan secara native menggunakan representasi matriks SVG murni.
+  - **Zero External Dependencies**: Tidak membutuhkan pustaka pihak ketiga berukuran besar atau ekstensi PHP GD / Imagick.
+  - Skalabel, tajam di resolusi tinggi (*retina ready*), dan siap cetak dokumen PDF.
+- **Portal Verifikasi Tiket Publik (`/tickets/verify/{token}`)**:
+  - Dapat dipindai oleh kru bus atau konduktor di lokasi penjemputan.
+  - Menampilkan badge status real-time (*Resmi & Terverifikasi*, *Menunggu Pembayaran*, *Dibatalkan*, atau *Kedaluwarsa*).
+  - Menampilkan manifest nama penumpang, nomor kursi, nama armada, titik naik, dan waktu verifikasi.
+
+---
+
+## 16. Arsitektur Notifikasi (Notifications)
+
+Sistem notifikasi native Laravel (`app/Notifications/`):
+- `BookingCreatedNotification`: Notifikasi pembuatan pesanan dan batas pembayaran.
+- `PaymentReceivedNotification`: Notifikasi konfirmasi pelunasan dan E-Tiket siap pakai.
+- `BookingCancelledNotification`: Notifikasi pembatalan pesanan dan pelepasan kursi.
+- `BookingExpiredNotification`: Notifikasi batas waktu habis otomatis.
+
+*Catatan Lingkungan Lokal*: Menggunakan `MAIL_MAILER=log` sehingga seluruh notifikasi tercatat langsung di berkas log tanpa membutuhkan kredensial SMTP eksternal.
+
+---
+
+## 17. Pengujian Otomatis (Automated Testing)
+
+Aplikasi dilengkapi rangkaian pengujian unit dan fitur lengkap:
+
+```bash
+# Jalankan seluruh test suite
+php artisan test
+
+# Jalankan pengujian khusus Sprint 4 Hardening
+php artisan test tests/Feature/Sprint4HardeningTest.php
+
+# Jalankan pengecekan gaya kode PSR-12
 vendor/bin/pint --test
 ```
 
----
-
-## 9. Struktur Direktori Proyek
-
-```
-├── app/
-│   ├── Http/
-│   │   ├── Controllers/         # Controller aplikasi (Thin Controllers)
-│   │   │   ├── Admin/           # Controller administrasi CAN Travel
-│   │   │   ├── AuthController.php
-│   │   │   ├── BookingController.php
-│   │   │   ├── HomeController.php
-│   │   │   ├── OrderController.php
-│   │   │   └── TripController.php
-│   │   ├── Middleware/          # Middleware aplikasi (AdminMiddleware, dll.)
-│   │   └── Requests/            # Form Request Validation mandiri
-│   │       ├── Admin/           # Validasi armada, rute, trip, status pesanan
-│   │       ├── Auth/            # Validasi login dan registrasi
-│   │       ├── Booking/         # Validasi pemesanan tiket
-│   │       └── Profile/         # Validasi update profil
-│   ├── Models/                  # Model Eloquent (User, Bus, BusSeat, Route, Trip, Order, OrderItem, Payment)
-│   └── Policies/                # Authorization Policies (OrderPolicy)
-├── database/
-│   ├── factories/               # Model factories untuk testing otomatis
-│   ├── migrations/              # Definisi skema tabel & indeks performa
-│   └── seeders/                 # Data inisialisasi awal sistem
-├── resources/
-│   ├── css/                     # Konfigurasi Tailwind CSS
-│   ├── js/                      # JavaScript frontend assets
-│   └── views/                   # Template Blade (layouts, admin, components, orders, trips, booking)
-├── routes/
-│   └── web.php                  # Definisi rute web terstruktur (Public, Guest, Auth, Admin)
-└── tests/
-    └── Feature/                 # Automated feature integration tests
-```
+### Cakupan Pengujian (Total: 41 Tests, 155 Assertions - 100% Passing):
+- **Payment Lifecycle**: Pembuatan pembayaran, verifikasi field hardened, simulasi sukses, simulasi gagal, idempotensi ganda, proteksi pembayaran kadaluwarsa.
+- **Webhook Handling**: Penolakan signature palsu, konfirmasi transaksi sukses, idempotensi webhook ganda, penanganan event expired dan failure.
+- **Scheduler & Expiration**: Perintah `orders:expire` membatalkan pesanan overdue dan melepas kursi, idempotensi eksekusi berulang, pesanan aktif/lunas tidak tersentuh.
+- **Keamanan & Otorisasi**: Kehadiran security headers, proteksi IDOR, otorisasi portal admin, otorisasi ekspor CSV.
+- **E-Tiket & Verifikasi**: Validasi token tiket valid, penolakan token fiktif (404), rendering QR code SVG.
 
 ---
 
-## 10. Lisensi
+## 18. Panduan Troubleshooting
 
-Hak Cipta © 2026 **CAN Travel**. Seluruh hak cipta dilindungi undang-undang.
+1. **Jadwal Tidak Terbuka / Tidak Muncul di Pencarian**:
+   - Pastikan jadwal memiliki status `scheduled` dan waktu keberangkatan `departure_at` berada di masa depan (`> now()`).
+2. **Pengujian Gagal Terkait Mail / Timeout**:
+   - Pastikan `.env` menggunakan `MAIL_MAILER=log` atau `MAIL_MAILER=array` pada `phpunit.xml`.
+3. **Aset CSS / JS Tidak Tampil Sempurna**:
+   - Jalankan `npm run build` untuk mengompilasi bundel produksi Vite.
+4. **Membersihkan Cache Aplikasi**:
+   ```bash
+   php artisan optimize:clear
+   ```

@@ -8,14 +8,22 @@ use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Trip;
+use App\Notifications\BookingCreatedNotification;
+use App\Notifications\PaymentReceivedNotification;
+use App\Services\Payment\PaymentGatewayInterface;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class BookingController extends Controller
 {
+    public function __construct(
+        protected PaymentGatewayInterface $paymentGateway
+    ) {}
+
     /**
      * Show checkout form with selected seats and passenger input fields
      */
@@ -96,7 +104,8 @@ class BookingController extends Controller
                 $alreadyBooked = OrderItem::whereIn('bus_seat_id', $seatIds)
                     ->whereHas('order', function ($q) use ($trip) {
                         $q->where('trip_id', $trip->id)
-                            ->whereNotIn('status', ['cancelled', 'expired'])
+                            ->where('status', '!=', 'cancelled')
+                            ->where('payment_status', '!=', 'expired')
                             ->where(function ($sub) {
                                 $sub->where('payment_status', 'paid')
                                     ->orWhere(function ($pending) {
@@ -147,11 +156,12 @@ class BookingController extends Controller
                     ]);
                 }
 
-                // 7. Create Payment record
+                // 7. Create Payment record with provider
                 Payment::create([
                     'order_id' => $order->id,
                     'user_id' => $user->id,
                     'payment_method' => $validated['payment_method'],
+                    'provider' => $this->paymentGateway->getProviderName(),
                     'payment_reference' => 'PAY-'.strtoupper(Str::random(10)),
                     'amount' => $totalAmount,
                     'status' => 'pending',
@@ -160,6 +170,13 @@ class BookingController extends Controller
 
                 return $order;
             });
+
+            // Dispatch customer booking notification
+            try {
+                $user->notify(new BookingCreatedNotification($order));
+            } catch (\Throwable $e) {
+                Log::error("Failed to notify user for booking {$order->order_code}: ".$e->getMessage());
+            }
 
             return redirect()->route('booking.payment', $order)
                 ->with('success', 'Pesanan berhasil dibuat! Silakan selesaikan pembayaran.');
@@ -237,7 +254,45 @@ class BookingController extends Controller
             $proofPath = $request->file('payment_proof')->store('payment_proofs', 'public');
         }
 
-        DB::transaction(function () use ($order, $proofPath) {
+        // Delegate to PaymentGatewayInterface
+        $paymentResult = $this->paymentGateway->charge($order, array_merge($request->all(), [
+            'proof_file' => $proofPath,
+        ]));
+
+        if ($paymentResult->isExpired()) {
+            DB::transaction(function () use ($order) {
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'expired',
+                ]);
+                if ($order->payment && $order->payment->status !== 'expired') {
+                    $order->payment->update([
+                        'status' => 'expired',
+                        'expired_at' => now(),
+                    ]);
+                }
+            });
+
+            return redirect()->route('orders.show', $order)
+                ->with('error', $paymentResult->getMessage() ?: 'Batas waktu pembayaran pesanan ini telah habis (Kedaluwarsa). Kursi telah dilepaskan kembali.');
+        }
+
+        if ($paymentResult->isFailed()) {
+            DB::transaction(function () use ($order) {
+                if ($order->payment) {
+                    $order->payment->update([
+                        'status' => 'failed',
+                        'failed_at' => now(),
+                    ]);
+                }
+            });
+
+            return redirect()->route('booking.payment', $order)
+                ->with('error', $paymentResult->getMessage() ?: 'Pembayaran gagal diproses. Silakan coba kembali.');
+        }
+
+        // Process successful payment atomically
+        DB::transaction(function () use ($order, $proofPath, $paymentResult) {
             $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
 
             if ($lockedOrder->payment_status === 'paid') {
@@ -248,8 +303,13 @@ class BookingController extends Controller
             if ($lockedOrder->payment) {
                 $lockedOrder->payment->update([
                     'status' => 'success',
+                    'provider' => $this->paymentGateway->getProviderName(),
+                    'provider_transaction_id' => $paymentResult->getTransactionId(),
                     'paid_at' => now(),
-                    'proof_file' => $proofPath,
+                    'proof_file' => $proofPath ?: $lockedOrder->payment->proof_file,
+                    'metadata' => array_merge($lockedOrder->payment->metadata ?? [], [
+                        'charge_result' => $paymentResult->getPayload(),
+                    ]),
                 ]);
             }
 
@@ -260,6 +320,13 @@ class BookingController extends Controller
                 'expires_at' => null,
             ]);
         });
+
+        // Dispatch customer payment notification
+        try {
+            $order->user?->notify(new PaymentReceivedNotification($order));
+        } catch (\Throwable $e) {
+            Log::error("Failed to notify user for payment {$order->order_code}: ".$e->getMessage());
+        }
 
         return redirect()->route('orders.show', $order)
             ->with('success', 'Pembayaran berhasil dikonfirmasi! E-Tiket Anda telah terbit.');

@@ -62,7 +62,8 @@ class Trip extends Model
     {
         return $query->withCount(['orderItems as active_booked_seats_count' => function ($q) {
             $q->whereHas('order', function ($sub) {
-                $sub->whereNotIn('status', ['cancelled', 'expired'])
+                $sub->where('status', '!=', 'cancelled')
+                    ->where('payment_status', '!=', 'expired')
                     ->where(function ($sub2) {
                         $sub2->where('payment_status', 'paid')
                             ->orWhere(function ($pending) {
@@ -76,15 +77,16 @@ class Trip extends Model
 
     /**
      * Get IDs of seats that are currently booked for this trip.
-     * Paid/confirmed orders hold seats permanently.
-     * Unpaid orders hold seats only until expires_at.
-     * Cancelled and expired orders never hold seats.
+     * Paid/confirmed orders hold seats permanently (BOOKED).
+     * Unpaid orders hold seats only until expires_at (HELD).
+     * Cancelled and expired orders never hold seats (RELEASED / AVAILABLE).
      */
     public function getBookedSeatIds(): array
     {
         return OrderItem::whereHas('order', function ($query) {
             $query->where('trip_id', $this->id)
-                ->whereNotIn('status', ['cancelled', 'expired'])
+                ->where('status', '!=', 'cancelled')
+                ->where('payment_status', '!=', 'expired')
                 ->where(function ($sub) {
                     $sub->where('payment_status', 'paid')
                         ->orWhere(function ($pending) {

@@ -20,7 +20,7 @@ class OrderFactory extends Factory
         return [
             'user_id' => User::factory(),
             'trip_id' => Trip::factory(),
-            'order_code' => 'PCT-'.date('Ymd').'-'.strtoupper(Str::random(5)),
+            'order_code' => 'CAN-'.date('Ymd').'-'.strtoupper(Str::random(5)),
             'total_amount' => 280000,
             'status' => 'pending',
             'payment_status' => 'unpaid',

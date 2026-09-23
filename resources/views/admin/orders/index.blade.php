@@ -2,21 +2,39 @@
 
 @section('title', 'Manajemen Pesanan Tiket — CAN Travel')
 @section('page_title', 'Kelola Pesanan Tiket')
-@section('page_subtitle', 'Monitor seluruh transaksi pemesanan tiket customer')
+@section('page_subtitle', 'Monitor seluruh transaksi pemesanan tiket customer dan ekspor laporan')
 
 @section('content')
 <div class="space-y-6">
     
-    <!-- Filter and Search Bar -->
-    <div class="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm">
-        <form action="{{ route('admin.orders.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-4 gap-3 text-xs">
+    <!-- Action Bar & Filter Container -->
+    <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+        
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
+                <h2 class="text-sm font-bold text-slate-800">Filter & Pencarian Lanjutan</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Saring pesanan berdasarkan kode, tanggal pemesanan, rute, atau status bayar.</p>
+            </div>
+
+            <!-- CSV Export Button with active query filters -->
+            <a href="{{ route('admin.orders.export', request()->query()) }}" class="inline-flex items-center px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition shrink-0">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Ekspor Laporan CSV
+            </a>
+        </div>
+
+        <form action="{{ route('admin.orders.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 text-xs">
+            <!-- Search Keyword -->
+            <div class="lg:col-span-2">
                 <label class="block font-bold text-slate-500 uppercase mb-1">Cari Pesanan</label>
                 <input type="text" name="search" value="{{ request('search') }}" 
                     class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold"
-                    placeholder="Kode order / nama / HP...">
+                    placeholder="Kode order / nama / HP / penumpang...">
             </div>
 
+            <!-- Status Order -->
             <div>
                 <label class="block font-bold text-slate-500 uppercase mb-1">Status Order</label>
                 <select name="status" class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold">
@@ -28,6 +46,7 @@
                 </select>
             </div>
 
+            <!-- Payment Status -->
             <div>
                 <label class="block font-bold text-slate-500 uppercase mb-1">Status Bayar</label>
                 <select name="payment_status" class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold">
@@ -39,13 +58,26 @@
                 </select>
             </div>
 
-            <div class="flex items-end space-x-2">
-                <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition">
-                    Filter
-                </button>
-                <a href="{{ route('admin.orders.index') }}" class="py-2.5 px-3 rounded-xl border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition text-center">
-                    Reset
+            <!-- Date From -->
+            <div>
+                <label class="block font-bold text-slate-500 uppercase mb-1">Dari Tanggal</label>
+                <input type="date" name="date_from" value="{{ request('date_from') }}" class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold">
+            </div>
+
+            <!-- Date To -->
+            <div>
+                <label class="block font-bold text-slate-500 uppercase mb-1">Sampai Tanggal</label>
+                <input type="date" name="date_to" value="{{ request('date_to') }}" class="w-full py-2 px-3 rounded-xl border border-slate-300 font-semibold">
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="lg:col-span-6 flex items-center justify-end space-x-2 pt-2">
+                <a href="{{ route('admin.orders.index') }}" class="py-2 px-4 rounded-xl border border-slate-300 text-slate-600 font-bold hover:bg-slate-50 transition text-center">
+                    Reset Filter
                 </a>
+                <button type="submit" class="py-2 px-6 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition">
+                    Terapkan Filter
+                </button>
             </div>
         </form>
     </div>
@@ -69,7 +101,10 @@
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     @forelse($orders as $order)
                         <tr class="hover:bg-slate-50 transition">
-                            <td class="py-4 px-6 font-mono font-bold text-slate-900">{{ $order->order_code }}</td>
+                            <td class="py-4 px-6 font-mono font-bold text-slate-900">
+                                {{ $order->order_code }}
+                                <span class="block text-[10px] text-slate-400 font-normal font-sans">{{ $order->created_at->format('d M Y, H:i') }}</span>
+                            </td>
                             <td class="py-4 px-6">
                                 <div class="font-bold text-slate-900">{{ $order->user->name }}</div>
                                 <div class="text-[11px] text-slate-400">{{ $order->user->email }} &bull; {{ $order->user->phone }}</div>
@@ -100,16 +135,20 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="py-8 text-center text-slate-400">Belum ada data pesanan sesuai kriteria filter.</td>
+                            <td colspan="8" class="py-8 text-center text-slate-400 font-medium">
+                                Tidak ada data pesanan yang sesuai dengan filter yang dipilih.
+                            </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
 
-        <div class="p-4 border-t border-slate-100">
-            {{ $orders->links() }}
-        </div>
+        @if($orders->hasPages())
+            <div class="p-4 border-t border-slate-200">
+                {{ $orders->links() }}
+            </div>
+        @endif
     </div>
 
 </div>

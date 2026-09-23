@@ -235,6 +235,16 @@
                                         HP: {{ $item->passenger_phone ?: '-' }} 
                                         @if($item->passenger_id_number) &bull; ID: {{ $item->passenger_id_number }} @endif
                                     </p>
+                                    @if($item->ticket_token)
+                                        <div class="mt-1 flex items-center space-x-2">
+                                            <span class="inline-flex items-center text-[10px] font-mono font-bold bg-slate-100 text-slate-700 px-2 py-0.5 rounded border border-slate-200">
+                                                {{ $item->ticket_token }}
+                                            </span>
+                                            <a href="{{ route('tickets.verify', $item->ticket_token) }}" target="_blank" class="text-[10px] font-bold text-brand-600 hover:text-brand-800 hover:underline">
+                                                Cek Status Tiket &rarr;
+                                            </a>
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
 
@@ -266,32 +276,29 @@
                     </div>
                 </div>
 
-                <!-- Boarding Instructions & Barcode Simulation -->
+                <!-- Boarding Instructions & Verified QR Code -->
                 <div class="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <div class="text-xs text-slate-500 space-y-1 text-center sm:text-left">
+                    <div class="text-xs text-slate-500 space-y-1 text-center sm:text-left flex-1">
                         <p class="font-bold text-slate-800">Petunjuk Boarding CAN Travel:</p>
                         <p>1. Tiba di pool/terminal keberangkatan paling lambat 30 menit sebelum jadwal.</p>
-                        <p>2. Tunjukkan E-Tiket ini kepada petugas atau kru bus saat boarding.</p>
-                        <p>3. Kapasitas bagasi gratis maksimal 20 kg per penumpang.</p>
+                        <p>2. Tunjukkan QR Code E-Tiket ini kepada petugas atau kru bus saat boarding.</p>
+                        <p>3. Petugas akan memindai QR Code untuk verifikasi manifest resmi secara real-time.</p>
+                        <p>4. Kapasitas bagasi gratis maksimal 20 kg per penumpang.</p>
                     </div>
 
-                    <!-- Simulated Barcode Box -->
-                    <div class="text-center bg-white p-3 rounded-2xl border-2 border-slate-200 shadow-sm" aria-label="Barcode Tiket">
-                        <div class="flex items-center justify-center space-x-1 h-12 w-48 mb-1">
-                            <div class="w-1 bg-slate-900 h-full"></div>
-                            <div class="w-2 bg-slate-900 h-full"></div>
-                            <div class="w-0.5 bg-slate-900 h-full"></div>
-                            <div class="w-3 bg-slate-900 h-full"></div>
-                            <div class="w-1 bg-slate-900 h-full"></div>
-                            <div class="w-0.5 bg-slate-900 h-full"></div>
-                            <div class="w-2 bg-slate-900 h-full"></div>
-                            <div class="w-1 bg-slate-900 h-full"></div>
-                            <div class="w-3 bg-slate-900 h-full"></div>
-                            <div class="w-1 bg-slate-900 h-full"></div>
-                            <div class="w-0.5 bg-slate-900 h-full"></div>
-                            <div class="w-2 bg-slate-900 h-full"></div>
+                    <!-- Verified SVG QR Code Box -->
+                    @php
+                        $primaryToken = $order->orderItems->first()?->ticket_token ?? $order->order_code;
+                        $verifyUrl = route('tickets.verify', ['token' => $primaryToken]);
+                    @endphp
+                    <div class="text-center bg-white p-3 rounded-2xl border border-slate-200 shadow-sm shrink-0" aria-label="QR Code Verifikasi Boarding">
+                        <div class="flex items-center justify-center p-1 bg-white rounded-xl">
+                            {!! \App\Services\QrCodeService::svg($verifyUrl, 120) !!}
                         </div>
-                        <span class="text-[10px] font-mono font-bold tracking-widest text-slate-700">{{ $order->order_code }}</span>
+                        <span class="text-[10px] font-mono font-bold tracking-widest text-slate-700 block mt-1.5">{{ $order->order_code }}</span>
+                        <a href="{{ $verifyUrl }}" target="_blank" class="text-[10px] text-brand-600 hover:text-brand-800 font-bold hover:underline block mt-0.5 no-print">
+                            Pindai / Cek Tiket &rarr;
+                        </a>
                     </div>
                 </div>
 

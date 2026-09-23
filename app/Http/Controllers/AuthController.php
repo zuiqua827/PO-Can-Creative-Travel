@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AuthController extends Controller
 {
@@ -30,6 +31,12 @@ class AuthController extends Controller
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
 
+            Log::info('User logged in successfully', [
+                'user_id' => Auth::id(),
+                'role' => Auth::user()->role,
+                'ip' => $request->ip(),
+            ]);
+
             if (Auth::user()->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'))
                     ->with('success', 'Selamat datang kembali, Administrator CAN Travel!');
@@ -38,6 +45,11 @@ class AuthController extends Controller
             return redirect()->intended(route('home'))
                 ->with('success', 'Selamat datang kembali di CAN Travel, '.Auth::user()->name.'!');
         }
+
+        Log::warning('Failed login attempt', [
+            'email' => $request->input('email'),
+            'ip' => $request->ip(),
+        ]);
 
         return back()->withErrors([
             'email' => 'Email atau kata sandi yang Anda masukkan salah.',

@@ -11,7 +11,9 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentWebhookController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\TicketVerificationController;
 use App\Http\Controllers\TripController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,9 +31,9 @@ Route::get('/trips/{trip}', [TripController::class, 'show'])->name('trips.show')
 // Authentication routes
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-    Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::post('/login', [AuthController::class, 'login'])->name('login.post')->middleware('throttle:login');
     Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
-    Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+    Route::post('/register', [AuthController::class, 'register'])->name('register.post')->middleware('throttle:register');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -44,9 +46,9 @@ Route::middleware('auth')->group(function () {
 
     // Booking flow
     Route::get('/trips/{trip}/checkout', [BookingController::class, 'checkout'])->name('booking.checkout');
-    Route::post('/trips/{trip}/booking', [BookingController::class, 'store'])->name('booking.store');
+    Route::post('/trips/{trip}/booking', [BookingController::class, 'store'])->name('booking.store')->middleware('throttle:booking');
     Route::get('/orders/{order}/payment', [BookingController::class, 'payment'])->name('booking.payment');
-    Route::post('/orders/{order}/payment', [BookingController::class, 'processPayment'])->name('booking.processPayment');
+    Route::post('/orders/{order}/payment', [BookingController::class, 'processPayment'])->name('booking.processPayment')->middleware('throttle:payment');
 
     // Orders & E-Tickets
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
@@ -72,9 +74,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Orders
     Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+    Route::get('/orders/export', [AdminOrderController::class, 'export'])->name('orders.export');
     Route::get('/orders/{order}', [AdminOrderController::class, 'show'])->name('orders.show');
     Route::put('/orders/{order}', [AdminOrderController::class, 'updateStatus'])->name('orders.update');
 
     // Customers
     Route::get('/customers', [AdminCustomerController::class, 'index'])->name('customers.index');
 });
+
+// Public Ticket Verification (QR Code scanning)
+Route::get('/tickets/verify/{token}', [TicketVerificationController::class, 'verify'])
+    ->name('tickets.verify')
+    ->middleware('throttle:ticket-verify');
+
+// Payment Gateway Webhook (External Gateway Callback)
+Route::post('/payments/webhook', [PaymentWebhookController::class, 'handle'])
+    ->name('payments.webhook')
+    ->middleware('throttle:payment-webhook');

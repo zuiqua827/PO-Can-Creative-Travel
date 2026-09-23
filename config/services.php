@@ -31,4 +31,22 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    'payment' => [
+        'gateway' => env('PAYMENT_GATEWAY', 'simulation'),
+        'webhook_secret' => env('PAYMENT_WEBHOOK_SECRET', 'test_secret_can_travel'),
+        'simulation' => [
+            'auto_confirm' => env('PAYMENT_SIMULATION_AUTO_CONFIRM', false),
+        ],
+        // Placeholders for real gateways (Midtrans, Xendit, etc.)
+        'midtrans' => [
+            'server_key' => env('MIDTRANS_SERVER_KEY'),
+            'client_key' => env('MIDTRANS_CLIENT_KEY'),
+            'is_production' => env('MIDTRANS_IS_PRODUCTION', false),
+        ],
+        'xendit' => [
+            'secret_key' => env('XENDIT_SECRET_KEY'),
+            'public_key' => env('XENDIT_PUBLIC_KEY'),
+        ],
+    ],
+
 ];
