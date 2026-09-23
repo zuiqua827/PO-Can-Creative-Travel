@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'E-Tiket Resmi — ' . $order->order_code . ' — CAN Travel')
-@section('meta_description', 'E-Tiket Resmi CAN Travel perjalanan bus ' . $order->trip->route->origin . ' ke ' . $order->trip->route->destination . '. Kode Pemesanan: ' . $order->order_code)
+@section('title', 'Detail Pesanan ' . $order->order_code . ' — CAN Travel')
+@section('meta_description', 'Detail pesanan dan E-Tiket Resmi CAN Travel rute ' . $order->trip->route->origin . ' ke ' . $order->trip->route->destination . '. Kode: ' . $order->order_code)
 
 @push('styles')
 <style>
@@ -11,40 +11,164 @@
         }
         body {
             background-color: white !important;
+            color: black !important;
         }
         .ticket-card {
             box-shadow: none !important;
-            border: 1px solid #cbd5e1 !important;
+            border: 1px solid #94a3b8 !important;
         }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="bg-slate-100 py-12">
+<div class="bg-slate-100 py-10 sm:py-12">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        <!-- Action Toolbar -->
-        <div class="flex items-center justify-between mb-6 no-print">
+        <!-- Top Navigation / Action Bar -->
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 gap-4 no-print">
             <a href="{{ route('orders.index') }}" class="inline-flex items-center text-xs font-bold text-slate-600 hover:text-slate-900 transition">
-                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
                 Kembali ke Pesanan Saya
             </a>
 
-            <div class="flex items-center space-x-3">
-                <button type="button" onclick="window.print()" class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 shadow-sm transition">
-                    <svg class="w-4 h-4 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                    </svg>
-                    Cetak / Simpan PDF
-                </button>
+            <div class="flex flex-wrap items-center gap-2">
+                @if($order->payment_status === 'paid')
+                    <button type="button" onclick="window.print()" class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-bold bg-white text-slate-700 hover:bg-slate-50 border border-slate-300 shadow-sm transition">
+                        <svg class="w-4 h-4 mr-1.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        Cetak / Simpan PDF
+                    </button>
+                @endif
 
-                @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
-                    <a href="{{ route('booking.payment', $order) }}" class="inline-flex items-center px-4 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition">
-                        Selesaikan Pembayaran
+                @if($order->payment_status === 'unpaid' && !in_array($order->status, ['cancelled', 'expired']))
+                    <form action="{{ route('orders.cancel', $order) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini? Kursi Anda akan dilepaskan kembali.')">
+                        @csrf
+                        <button type="submit" class="px-3.5 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition">
+                            Batalkan Pesanan
+                        </button>
+                    </form>
+
+                    <a href="{{ route('booking.payment', $order) }}" class="inline-flex items-center px-5 py-2.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 transition">
+                        <span>Bayar Sekarang</span>
+                        <svg class="w-4 h-4 ml-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
                     </a>
+                @endif
+            </div>
+        </div>
+
+        <!-- Status Context Banner -->
+        @if($order->status === 'cancelled')
+            <div class="mb-6 bg-rose-50 border border-rose-200 rounded-3xl p-5 sm:p-6 text-rose-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-rose-100 flex items-center justify-center text-rose-600 font-bold shrink-0">
+                        ✕
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-sm text-slate-900">Pesanan Telah Dibatalkan</h2>
+                        <p class="text-xs text-rose-700 mt-0.5">Pesanan ini telah dibatalkan dan kursi telah dilepaskan kembali ke sistem tiket.</p>
+                    </div>
+                </div>
+                <a href="{{ route('trips.index') }}" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition shrink-0">
+                    Pesan Tiket Baru
+                </a>
+            </div>
+        @elseif($order->status === 'expired' || $order->payment_status === 'expired')
+            <div class="mb-6 bg-slate-200 border border-slate-300 rounded-3xl p-5 sm:p-6 text-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-slate-300 flex items-center justify-center text-slate-700 font-bold shrink-0">
+                        ⏰
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-sm text-slate-900">Batas Waktu Pembayaran Habis (Kedaluwarsa)</h2>
+                        <p class="text-xs text-slate-600 mt-0.5">Waktu pembayaran 2 jam telah lewat. Kursi yang Anda pilih telah dilepaskan kembali.</p>
+                    </div>
+                </div>
+                <a href="{{ route('trips.index') }}" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-xs font-bold hover:bg-brand-700 transition shrink-0">
+                    Cari Jadwal Baru
+                </a>
+            </div>
+        @elseif($order->payment_status === 'unpaid')
+            <div class="mb-6 bg-amber-50 border border-amber-200 rounded-3xl p-5 sm:p-6 text-amber-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 no-print">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-2xl bg-amber-100 flex items-center justify-center text-amber-700 font-bold shrink-0">
+                        ⏳
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-sm text-slate-900">Menunggu Pembayaran</h2>
+                        <p class="text-xs text-amber-800 mt-0.5">
+                            Selesaikan pembayaran sebelum <strong>{{ $order->expires_at ? $order->expires_at->translatedFormat('d M Y, H:i') : '-' }} WIB</strong> agar reservasi kursi Anda tidak dibatalkan.
+                        </p>
+                    </div>
+                </div>
+                <a href="{{ route('booking.payment', $order) }}" class="px-4 py-2 rounded-xl bg-amber-600 text-white text-xs font-bold hover:bg-amber-700 transition shrink-0">
+                    Lanjut Bayar
+                </a>
+            </div>
+        @endif
+
+        <!-- Order Timeline Progress (Task 6) -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm mb-6 no-print">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Status & Alur Pesanan</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
+                <!-- Step 1: Created -->
+                <div class="p-3 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    <span class="block font-bold">1. Dibuat</span>
+                    <span class="text-[10px] text-emerald-600 font-medium">{{ $order->created_at->format('d M, H:i') }}</span>
+                </div>
+
+                <!-- Step 2: Payment -->
+                @if($order->payment_status === 'paid')
+                    <div class="p-3 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span class="block font-bold">2. Dibayar</span>
+                        <span class="text-[10px] text-emerald-600 font-medium">{{ $order->payment && $order->payment->paid_at ? $order->payment->paid_at->format('d M, H:i') : 'Sukses' }}</span>
+                    </div>
+                @elseif($order->status === 'cancelled')
+                    <div class="p-3 rounded-2xl bg-rose-50 text-rose-800 border border-rose-200">
+                        <span class="block font-bold">2. Dibatalkan</span>
+                        <span class="text-[10px] text-rose-600 font-medium">Batal</span>
+                    </div>
+                @elseif($order->status === 'expired' || $order->payment_status === 'expired')
+                    <div class="p-3 rounded-2xl bg-slate-100 text-slate-600 border border-slate-200">
+                        <span class="block font-bold">2. Kedaluwarsa</span>
+                        <span class="text-[10px] text-slate-400 font-medium">Lewat Batas</span>
+                    </div>
+                @else
+                    <div class="p-3 rounded-2xl bg-amber-50 text-amber-800 border border-amber-200">
+                        <span class="block font-bold">2. Menunggu Bayar</span>
+                        <span class="text-[10px] text-amber-600 font-medium">Belum Dibayar</span>
+                    </div>
+                @endif
+
+                <!-- Step 3: Ticket Issue -->
+                @if($order->payment_status === 'paid')
+                    <div class="p-3 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span class="block font-bold">3. E-Tiket Terbit</span>
+                        <span class="text-[10px] text-emerald-600 font-medium">Siap Boarding</span>
+                    </div>
+                @else
+                    <div class="p-3 rounded-2xl bg-slate-50 text-slate-400 border border-slate-100">
+                        <span class="block font-bold">3. E-Tiket</span>
+                        <span class="text-[10px] text-slate-400">Menunggu</span>
+                    </div>
+                @endif
+
+                <!-- Step 4: Completed -->
+                @if($order->status === 'completed')
+                    <div class="p-3 rounded-2xl bg-blue-50 text-blue-800 border border-blue-200">
+                        <span class="block font-bold">4. Selesai</span>
+                        <span class="text-[10px] text-blue-600 font-medium">Perjalanan Usai</span>
+                    </div>
+                @else
+                    <div class="p-3 rounded-2xl bg-slate-50 text-slate-400 border border-slate-100">
+                        <span class="block font-bold">4. Perjalanan</span>
+                        <span class="text-[10px] text-slate-400">{{ $order->trip->departure_at->format('d M') }}</span>
+                    </div>
                 @endif
             </div>
         </div>

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\OrderStatusRequest;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -37,6 +38,10 @@ class OrderController extends Controller
             $query->where('payment_status', $request->payment_status);
         }
 
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
+
         $orders = $query->paginate(15)->withQueryString();
 
         return view('admin.orders.index', compact('orders'));
@@ -53,20 +58,27 @@ class OrderController extends Controller
     {
         $validated = $request->validated();
 
-        $order->update($validated);
-
-        if ($order->payment) {
-            $paymentStatus = match ($validated['payment_status']) {
-                'paid' => 'success',
-                'expired' => 'expired',
-                'refunded' => 'refunded',
-                default => 'pending',
-            };
-            $order->payment->update([
-                'status' => $paymentStatus,
-                'paid_at' => ($validated['payment_status'] === 'paid' && ! $order->payment->paid_at) ? now() : $order->payment->paid_at,
-            ]);
+        // Enforce valid lifecycle transitions
+        if (! $order->canTransitionTo($validated['status'])) {
+            return back()->with('error', "Perubahan status pesanan dari '{$order->status}' ke '{$validated['status']}' tidak diizinkan oleh sistem.");
         }
+
+        DB::transaction(function () use ($order, $validated) {
+            $order->update($validated);
+
+            if ($order->payment) {
+                $paymentStatus = match ($validated['payment_status']) {
+                    'paid' => 'success',
+                    'expired' => 'expired',
+                    'refunded' => 'refunded',
+                    default => ($validated['status'] === 'cancelled' ? 'failed' : 'pending'),
+                };
+                $order->payment->update([
+                    'status' => $paymentStatus,
+                    'paid_at' => ($validated['payment_status'] === 'paid' && ! $order->payment->paid_at) ? now() : $order->payment->paid_at,
+                ]);
+            }
+        });
 
         return back()->with('success', "Status pesanan {$order->order_code} berhasil diperbarui!");
     }

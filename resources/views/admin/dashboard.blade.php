@@ -7,12 +7,12 @@
 @section('content')
 <div class="space-y-8">
     
-    <!-- Top KPI Cards Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    <!-- Top KPI Cards Grid (Task 8) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         <!-- Revenue Card -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">
+            <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl shrink-0">
                 Rp
             </div>
             <div>
@@ -20,49 +20,49 @@
                 <div class="text-xl font-black text-slate-900 mt-0.5">
                     Rp {{ number_format($totalRevenue, 0, ',', '.') }}
                 </div>
-                <span class="text-[11px] text-emerald-600 font-semibold">{{ $paidOrdersCount }} Pesanan Berhasil</span>
+                <span class="text-[11px] text-emerald-600 font-semibold">{{ $paidOrdersCount }} Pesanan Lunas</span>
             </div>
         </div>
 
-        <!-- Total Orders Card -->
+        <!-- Today's Bookings & Total Orders -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xl">
+            <div class="w-14 h-14 rounded-2xl bg-brand-50 text-brand-600 flex items-center justify-center font-bold text-xl shrink-0">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
             </div>
             <div>
-                <span class="text-xs font-bold uppercase text-slate-400">Total Pesanan</span>
-                <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalOrders }}</div>
-                <span class="text-[11px] text-amber-600 font-semibold">{{ $pendingOrdersCount }} Menunggu Bayar</span>
+                <span class="text-xs font-bold uppercase text-slate-400">Pesanan Hari Ini</span>
+                <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $todayBookingsCount }}</div>
+                <span class="text-[11px] text-slate-500 font-medium">Dari {{ $totalOrders }} Total Pesanan</span>
             </div>
         </div>
 
-        <!-- Active Trips Card -->
+        <!-- Pending & Cancelled Orders -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div class="w-14 h-14 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-xl">
+            <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-xl shrink-0">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
             </div>
             <div>
-                <span class="text-xs font-bold uppercase text-slate-400">Jadwal Aktif</span>
-                <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $activeTrips }}</div>
-                <span class="text-[11px] text-slate-500 font-medium">Jadwal Keberangkatan</span>
+                <span class="text-xs font-bold uppercase text-slate-400">Status Pembayaran</span>
+                <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $pendingPaymentsCount }} <span class="text-xs font-normal text-amber-600">Pending</span></div>
+                <span class="text-[11px] text-rose-500 font-semibold">{{ $cancelledOrdersCount }} Pesanan Dibatalkan</span>
             </div>
         </div>
 
-        <!-- Fleet Count Card -->
+        <!-- Customers & Fleet -->
         <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex items-center space-x-4">
-            <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xl">
+            <div class="w-14 h-14 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center font-bold text-xl shrink-0">
                 <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h8m-8 5h8m-8 5h4M5 3h14a2 2 0 012 2v14a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
                 </svg>
             </div>
             <div>
-                <span class="text-xs font-bold uppercase text-slate-400">Total Armada</span>
-                <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalBuses }}</div>
-                <span class="text-[11px] text-slate-500 font-medium">{{ $totalRoutes }} Rute Tersedia</span>
+                <span class="text-xs font-bold uppercase text-slate-400">Pelanggan & Armada</span>
+                <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $totalCustomers }}</div>
+                <span class="text-[11px] text-slate-500 font-medium">{{ $totalBuses }} Bus &bull; {{ $activeTrips }} Jadwal Aktif</span>
             </div>
         </div>
 
@@ -73,7 +73,7 @@
         <div class="flex items-center justify-between mb-6">
             <div>
                 <h3 class="text-lg font-black text-slate-900">Keberangkatan Hari Ini</h3>
-                <p class="text-xs text-slate-500 mt-0.5">{{ date('d F Y') }} &bull; Pantau status armada dan okupansi kursi</p>
+                <p class="text-xs text-slate-500 mt-0.5">{{ date('d F Y') }} &bull; {{ $todayDeparturesCount }} jadwal hari ini &bull; Pantau status armada dan okupansi kursi</p>
             </div>
             <a href="{{ route('admin.trips.index') }}" class="text-xs font-bold text-brand-600 hover:text-brand-700">
                 Semua Jadwal &rarr;
@@ -95,7 +95,7 @@
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     @forelse($todayDepartures as $trip)
                         @php
-                            $bookedCount = count($trip->getBookedSeatIds());
+                            $bookedCount = isset($trip->active_booked_seats_count) ? (int)$trip->active_booked_seats_count : count($trip->getBookedSeatIds());
                             $totalCap = $trip->bus->seat_capacity;
                             $pct = $totalCap > 0 ? round(($bookedCount / $totalCap) * 100) : 0;
                         @endphp

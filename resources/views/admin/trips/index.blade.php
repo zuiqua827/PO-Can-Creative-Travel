@@ -73,6 +73,7 @@
                         <th class="py-4 px-6">Rute Trayek</th>
                         <th class="py-4 px-6">Armada Bus</th>
                         <th class="py-4 px-6">Jadwal Berangkat & Tiba</th>
+                        <th class="py-4 px-6">Kapasitas Kursi</th>
                         <th class="py-4 px-6">Harga Tiket</th>
                         <th class="py-4 px-6">Status</th>
                         <th class="py-4 px-6 text-right">Aksi</th>
@@ -80,6 +81,11 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100 text-slate-700">
                     @forelse($trips as $trip)
+                        @php
+                            $booked = isset($trip->active_booked_seats_count) ? (int)$trip->active_booked_seats_count : count($trip->getBookedSeatIds());
+                            $totalCap = $trip->bus ? $trip->bus->seat_capacity : 0;
+                            $avail = max(0, $totalCap - $booked);
+                        @endphp
                         <tr class="hover:bg-slate-50 transition">
                             <td class="py-4 px-6 font-mono font-bold text-slate-900">{{ $trip->trip_code }}</td>
                             <td class="py-4 px-6">
@@ -93,6 +99,12 @@
                             <td class="py-4 px-6">
                                 <div class="font-bold text-slate-900">{{ $trip->departure_at->translatedFormat('d M Y, H:i') }} WIB</div>
                                 <div class="text-[11px] text-slate-400">Tiba: {{ $trip->arrival_at->translatedFormat('d M Y, H:i') }} WIB</div>
+                            </td>
+                            <td class="py-4 px-6">
+                                <div class="font-bold {{ $avail > 0 ? 'text-emerald-700' : 'text-rose-600' }}">
+                                    {{ $avail }} / {{ $totalCap }} Kursi
+                                </div>
+                                <div class="text-[11px] text-slate-400 font-medium">{{ $booked }} Terpesan</div>
                             </td>
                             <td class="py-4 px-6 font-black text-brand-700 text-sm">{{ $trip->formatted_price }}</td>
                             <td class="py-4 px-6">
@@ -112,7 +124,7 @@
                                     <a href="{{ route('admin.trips.edit', $trip) }}" class="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold transition">
                                         Edit
                                     </a>
-                                    <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" onsubmit="return confirm('Hapus jadwal ini?')">
+                                    <form action="{{ route('admin.trips.destroy', $trip) }}" method="POST" onsubmit="return confirm('Hapus jadwal ini? Jadwal yang sudah memiliki pesanan tidak dapat dihapus.')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 font-bold transition">

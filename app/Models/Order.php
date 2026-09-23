@@ -72,4 +72,40 @@ class Order extends Model
             default => 'bg-amber-100 text-amber-800 border-amber-300',
         };
     }
+
+    /**
+     * Determine if order has expired based on payment deadline.
+     */
+    public function isExpired(): bool
+    {
+        return $this->payment_status === 'expired'
+            || ($this->payment_status === 'unpaid' && $this->expires_at && $this->expires_at->isPast());
+    }
+
+    /**
+     * Determine if order is paid.
+     */
+    public function isPaid(): bool
+    {
+        return $this->payment_status === 'paid';
+    }
+
+    /**
+     * Validate whether an order status transition is allowed.
+     */
+    public function canTransitionTo(string $newStatus): bool
+    {
+        if ($this->status === $newStatus) {
+            return true;
+        }
+
+        $allowedTransitions = [
+            'pending' => ['confirmed', 'cancelled'],
+            'confirmed' => ['completed', 'cancelled'],
+            'completed' => [],
+            'cancelled' => [],
+        ];
+
+        return in_array($newStatus, $allowedTransitions[$this->status] ?? []);
+    }
 }

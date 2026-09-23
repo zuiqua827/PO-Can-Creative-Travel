@@ -96,10 +96,13 @@ class BookingController extends Controller
                 $alreadyBooked = OrderItem::whereIn('bus_seat_id', $seatIds)
                     ->whereHas('order', function ($q) use ($trip) {
                         $q->where('trip_id', $trip->id)
-                            ->where('status', '!=', 'cancelled')
+                            ->whereNotIn('status', ['cancelled', 'expired'])
                             ->where(function ($sub) {
                                 $sub->where('payment_status', 'paid')
-                                    ->orWhere('expires_at', '>', now());
+                                    ->orWhere(function ($pending) {
+                                        $pending->where('payment_status', 'unpaid')
+                                            ->where('expires_at', '>', now());
+                                    });
                             });
                     })
                     ->lockForUpdate()
@@ -112,7 +115,7 @@ class BookingController extends Controller
                 // 4. Server-side total calculation (never trust frontend total)
                 $seatCount = count($seatIds);
                 $totalAmount = $trip->price * $seatCount;
-                $orderCode = 'PCT-'.date('Ymd').'-'.strtoupper(Str::random(5));
+                $orderCode = 'CAN-'.date('Ymd').'-'.strtoupper(Str::random(5));
 
                 // 5. Create Order
                 $order = Order::create([
@@ -177,12 +180,17 @@ class BookingController extends Controller
 
         $order->load(['trip.route', 'trip.bus', 'orderItems.busSeat', 'payment']);
 
-        // Check if order expired
-        if ($order->payment_status === 'unpaid' && $order->expires_at && $order->expires_at->isPast()) {
-            $order->update([
-                'status' => 'expired',
-                'payment_status' => 'expired',
-            ]);
+        // Check if order expired and synchronize status
+        if ($order->isExpired() && $order->payment_status !== 'expired') {
+            DB::transaction(function () use ($order) {
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'expired',
+                ]);
+                if ($order->payment && $order->payment->status !== 'expired') {
+                    $order->payment->update(['status' => 'expired']);
+                }
+            });
         }
 
         return view('booking.payment', compact('order'));
@@ -195,9 +203,32 @@ class BookingController extends Controller
     {
         $this->authorize('view', $order);
 
-        if ($order->payment_status === 'paid') {
+        // 1. Safe Idempotency: If already paid, redirect without modifying
+        if ($order->payment_status === 'paid' || $order->status === 'confirmed') {
             return redirect()->route('orders.show', $order)
                 ->with('info', 'Pesanan ini sudah dibayar sebelumnya.');
+        }
+
+        // 2. Prevent payment on cancelled or completed orders
+        if (in_array($order->status, ['cancelled', 'completed'])) {
+            return redirect()->route('orders.show', $order)
+                ->with('error', "Pesanan berstatus {$order->status} tidak dapat diproses pembayarannya.");
+        }
+
+        // 3. Backend verification of expiration deadline
+        if ($order->isExpired()) {
+            DB::transaction(function () use ($order) {
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'expired',
+                ]);
+                if ($order->payment && $order->payment->status !== 'expired') {
+                    $order->payment->update(['status' => 'expired']);
+                }
+            });
+
+            return redirect()->route('orders.show', $order)
+                ->with('error', 'Batas waktu pembayaran pesanan ini telah habis (Kedaluwarsa). Kursi telah dilepaskan kembali.');
         }
 
         // Handle proof upload if provided
@@ -207,17 +238,23 @@ class BookingController extends Controller
         }
 
         DB::transaction(function () use ($order, $proofPath) {
+            $lockedOrder = Order::where('id', $order->id)->lockForUpdate()->first();
+
+            if ($lockedOrder->payment_status === 'paid') {
+                return;
+            }
+
             // Update payment record
-            if ($order->payment) {
-                $order->payment->update([
+            if ($lockedOrder->payment) {
+                $lockedOrder->payment->update([
                     'status' => 'success',
                     'paid_at' => now(),
                     'proof_file' => $proofPath,
                 ]);
             }
 
-            // Update order status
-            $order->update([
+            // Update order status to confirmed
+            $lockedOrder->update([
                 'status' => 'confirmed',
                 'payment_status' => 'paid',
                 'expires_at' => null,

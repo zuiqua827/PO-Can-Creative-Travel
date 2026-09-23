@@ -32,11 +32,11 @@ class AuthController extends Controller
 
             if (Auth::user()->isAdmin()) {
                 return redirect()->intended(route('admin.dashboard'))
-                    ->with('success', 'Selamat datang kembali, Administrator PO CAN Travel!');
+                    ->with('success', 'Selamat datang kembali, Administrator CAN Travel!');
             }
 
             return redirect()->intended(route('home'))
-                ->with('success', 'Selamat datang kembali di PO CAN Travel, '.Auth::user()->name.'!');
+                ->with('success', 'Selamat datang kembali di CAN Travel, '.Auth::user()->name.'!');
         }
 
         return back()->withErrors([
@@ -69,7 +69,7 @@ class AuthController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('home')
-            ->with('success', 'Akun berhasil dibuat! Selamat datang di PO CAN Travel.');
+            ->with('success', 'Akun berhasil dibuat! Selamat datang di CAN Travel.');
     }
 
     public function logout(Request $request)

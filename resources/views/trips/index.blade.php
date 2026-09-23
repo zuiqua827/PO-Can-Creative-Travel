@@ -78,6 +78,8 @@
                 @if($destination)<input type="hidden" name="destination" value="{{ $destination }}">@endif
                 @if($date)<input type="hidden" name="date" value="{{ $date }}">@endif
                 @if($busType)<input type="hidden" name="bus_type" value="{{ $busType }}">@endif
+                @if($minPrice)<input type="hidden" name="min_price" value="{{ $minPrice }}">@endif
+                @if($maxPrice)<input type="hidden" name="max_price" value="{{ $maxPrice }}">@endif
 
                 <select name="sort" onchange="document.getElementById('sortForm').submit()" 
                     class="py-2 px-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm" aria-label="Urutkan Jadwal">

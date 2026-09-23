@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Bus;
 use App\Models\Route;
 use App\Models\Trip;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TripController extends Controller
@@ -14,13 +13,17 @@ class TripController extends Controller
     {
         $origin = $request->input('origin');
         $destination = $request->input('destination');
-        $date = $request->input('date', Carbon::today()->format('Y-m-d'));
+        $date = $request->input('date');
         $busType = $request->input('bus_type');
         $timeSlot = $request->input('time_slot'); // morning, afternoon, night
         $sortBy = $request->input('sort', 'departure_asc'); // price_asc, price_desc, departure_asc, departure_desc
+        $minPrice = $request->input('min_price');
+        $maxPrice = $request->input('max_price');
 
         $query = Trip::with(['bus', 'route'])
-            ->where('status', 'scheduled');
+            ->withBookedSeatsCount()
+            ->where('status', 'scheduled')
+            ->where('departure_at', '>', now());
 
         // Filter route origin/destination
         if ($origin || $destination) {
@@ -37,15 +40,21 @@ class TripController extends Controller
         // Filter date
         if ($date) {
             $query->whereDate('departure_at', $date);
-        } else {
-            $query->where('departure_at', '>=', now());
         }
 
-        // Filter bus type
+        // Filter bus type / class
         if ($busType) {
             $query->whereHas('bus', function ($q) use ($busType) {
                 $q->where('type', $busType);
             });
+        }
+
+        // Filter price range
+        if ($minPrice !== null && $minPrice !== '') {
+            $query->where('price', '>=', (float) $minPrice);
+        }
+        if ($maxPrice !== null && $maxPrice !== '') {
+            $query->where('price', '<=', (float) $maxPrice);
         }
 
         // Filter time slot
@@ -85,6 +94,8 @@ class TripController extends Controller
             'busType',
             'timeSlot',
             'sortBy',
+            'minPrice',
+            'maxPrice',
             'origins',
             'destinations',
             'busTypes'
@@ -93,6 +104,12 @@ class TripController extends Controller
 
     public function show(Trip $trip)
     {
+        // Trip must be bookable
+        if ($trip->status !== 'scheduled' || $trip->departure_at->isPast()) {
+            return redirect()->route('trips.index')
+                ->with('error', 'Jadwal perjalanan ini sudah tidak dapat dipesan atau telah lewat.');
+        }
+
         $trip->load(['bus.busSeats' => function ($q) {
             $q->orderBy('row', 'asc')->orderBy('column', 'asc');
         }, 'route']);

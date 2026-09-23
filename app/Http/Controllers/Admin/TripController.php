@@ -15,7 +15,9 @@ class TripController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Trip::with(['bus', 'route'])->latest('departure_at');
+        $query = Trip::with(['bus', 'route'])
+            ->withBookedSeatsCount()
+            ->latest('departure_at');
 
         if ($request->filled('route_id')) {
             $query->where('route_id', $request->route_id);
@@ -75,6 +77,11 @@ class TripController extends Controller
     {
         $validated = $request->validated();
 
+        // Prevent changing bus if orders already exist to protect seat mapping integrity
+        if ($trip->orders()->whereNotIn('status', ['cancelled', 'expired'])->exists() && (int) $validated['bus_id'] !== (int) $trip->bus_id) {
+            return back()->with('error', 'Armada bus tidak dapat diubah karena jadwal ini telah memiliki pemesanan aktif.');
+        }
+
         $trip->update($validated);
 
         return redirect()->route('admin.trips.index')
@@ -83,6 +90,11 @@ class TripController extends Controller
 
     public function destroy(Trip $trip)
     {
+        // Prevent deleting trip if orders exist
+        if ($trip->orders()->exists()) {
+            return back()->with('error', "Jadwal {$trip->trip_code} memiliki riwayat pesanan pelanggan dan tidak boleh dihapus. Anda dapat mengubah statusnya menjadi 'cancelled' (Dibatalkan).");
+        }
+
         $code = $trip->trip_code;
         $trip->delete();
 

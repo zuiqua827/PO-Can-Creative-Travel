@@ -98,13 +98,19 @@
                     <!-- Action Buttons -->
                     <div class="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                         <div class="text-xs text-slate-400">
-                            @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled' && $order->expires_at)
+                            @if($order->status === 'cancelled')
+                                <span class="text-rose-600 font-semibold">Pesanan Dibatalkan</span>
+                            @elseif($order->isExpired())
+                                <span class="text-slate-500 font-semibold">Batas Bayar Habis (Kedaluwarsa)</span>
+                            @elseif($order->payment_status === 'unpaid' && $order->expires_at)
                                 <span class="text-amber-600 font-medium">Batas bayar: {{ $order->expires_at->format('H:i') }} WIB</span>
+                            @elseif($order->payment_status === 'paid')
+                                <span class="text-emerald-600 font-semibold">✓ E-Tiket Aktif</span>
                             @endif
                         </div>
 
                         <div class="flex items-center space-x-2">
-                            @if($order->payment_status === 'unpaid' && $order->status !== 'cancelled')
+                            @if($order->payment_status === 'unpaid' && $order->status === 'pending' && !$order->isExpired())
                                 <form action="{{ route('orders.cancel', $order) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pesanan ini?')">
                                     @csrf
                                     <button type="submit" class="px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 transition">
@@ -118,7 +124,7 @@
                             @endif
 
                             <a href="{{ route('orders.show', $order) }}" class="px-4 py-2 rounded-xl text-xs font-bold bg-slate-900 hover:bg-brand-600 text-white transition flex items-center space-x-1.5">
-                                <span>Lihat Detail</span>
+                                <span>{{ $order->payment_status === 'paid' ? 'E-Tiket' : 'Lihat Detail' }}</span>
                                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
                                 </svg>

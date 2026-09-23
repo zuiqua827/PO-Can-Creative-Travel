@@ -40,6 +40,8 @@ class OrderPolicy
             return true;
         }
 
-        return $order->user_id === $user->id && $order->payment_status !== 'paid';
+        return $order->user_id === $user->id
+            && $order->payment_status !== 'paid'
+            && in_array($order->status, ['pending']);
     }
 }

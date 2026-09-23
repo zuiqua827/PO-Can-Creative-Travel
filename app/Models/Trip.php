@@ -56,17 +56,41 @@ class Trip extends Model
     }
 
     /**
+     * Scope to eager-load active booked seats count in one query without N+1.
+     */
+    public function scopeWithBookedSeatsCount($query)
+    {
+        return $query->withCount(['orderItems as active_booked_seats_count' => function ($q) {
+            $q->whereHas('order', function ($sub) {
+                $sub->whereNotIn('status', ['cancelled', 'expired'])
+                    ->where(function ($sub2) {
+                        $sub2->where('payment_status', 'paid')
+                            ->orWhere(function ($pending) {
+                                $pending->where('payment_status', 'unpaid')
+                                    ->where('expires_at', '>', now());
+                            });
+                    });
+            });
+        }]);
+    }
+
+    /**
      * Get IDs of seats that are currently booked for this trip.
-     * Includes orders that are confirmed/completed, or pending and not expired.
+     * Paid/confirmed orders hold seats permanently.
+     * Unpaid orders hold seats only until expires_at.
+     * Cancelled and expired orders never hold seats.
      */
     public function getBookedSeatIds(): array
     {
         return OrderItem::whereHas('order', function ($query) {
             $query->where('trip_id', $this->id)
-                ->where('status', '!=', 'cancelled')
+                ->whereNotIn('status', ['cancelled', 'expired'])
                 ->where(function ($sub) {
                     $sub->where('payment_status', 'paid')
-                        ->orWhere('expires_at', '>', now());
+                        ->orWhere(function ($pending) {
+                            $pending->where('payment_status', 'unpaid')
+                                ->where('expires_at', '>', now());
+                        });
                 });
         })->pluck('bus_seat_id')->toArray();
     }
@@ -74,7 +98,9 @@ class Trip extends Model
     public function getAvailableSeatsCountAttribute(): int
     {
         $totalSeats = $this->bus ? $this->bus->seat_capacity : 0;
-        $bookedSeats = count($this->getBookedSeatIds());
+        $bookedSeats = isset($this->attributes['active_booked_seats_count'])
+            ? (int) $this->attributes['active_booked_seats_count']
+            : count($this->getBookedSeatIds());
 
         return max(0, $totalSeats - $bookedSeats);
     }

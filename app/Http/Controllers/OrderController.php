@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OrderController extends Controller
 {
@@ -38,23 +39,51 @@ class OrderController extends Controller
 
         $order->load(['trip.route', 'trip.bus', 'orderItems.busSeat', 'payment', 'user']);
 
+        // Synchronize expired status if deadline has passed
+        if ($order->isExpired() && $order->payment_status !== 'expired') {
+            DB::transaction(function () use ($order) {
+                $order->update([
+                    'status' => 'cancelled',
+                    'payment_status' => 'expired',
+                ]);
+                if ($order->payment && $order->payment->status !== 'expired') {
+                    $order->payment->update(['status' => 'expired']);
+                }
+            });
+        }
+
         return view('orders.show', compact('order'));
     }
 
     public function cancel(Order $order)
     {
+        // Idempotency: If already cancelled, notify customer safely
+        if ($order->status === 'cancelled') {
+            return back()->with('info', 'Pesanan ini sudah dibatalkan sebelumnya.');
+        }
+
         // Enforce Policy authorization
         $this->authorize('cancel', $order);
 
-        if ($order->payment_status === 'paid') {
-            return back()->with('error', 'Pesanan yang telah dibayar tidak dapat dibatalkan secara otomatis. Silakan hubungi customer service.');
+        if ($order->payment_status === 'paid' || $order->status === 'confirmed') {
+            return back()->with('error', 'Pesanan yang telah dibayar tidak dapat dibatalkan secara otomatis. Silakan hubungi customer service CAN Travel.');
         }
 
-        $order->update([
-            'status' => 'cancelled',
-            'payment_status' => 'expired',
-        ]);
+        if ($order->status === 'completed') {
+            return back()->with('error', 'Pesanan yang telah selesai tidak dapat dibatalkan.');
+        }
 
-        return back()->with('success', 'Pesanan telah berhasil dibatalkan.');
+        DB::transaction(function () use ($order) {
+            $order->update([
+                'status' => 'cancelled',
+                'payment_status' => 'expired',
+            ]);
+
+            if ($order->payment) {
+                $order->payment->update(['status' => 'failed']);
+            }
+        });
+
+        return back()->with('success', 'Pesanan telah berhasil dibatalkan dan kursi Anda telah dilepaskan kembali.');
     }
 }

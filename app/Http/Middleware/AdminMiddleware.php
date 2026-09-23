@@ -18,7 +18,7 @@ class AdminMiddleware
         }
 
         if (! auth()->user()->isAdmin()) {
-            abort(403, 'Akses ditolak. Halaman ini hanya untuk Administrator PO CAN Travel.');
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk Administrator CAN Travel.');
         }
 
         return $next($request);
