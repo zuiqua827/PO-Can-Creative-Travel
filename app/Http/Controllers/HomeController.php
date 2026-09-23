@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Bus;
 use App\Models\Route;
 use App\Models\Trip;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {

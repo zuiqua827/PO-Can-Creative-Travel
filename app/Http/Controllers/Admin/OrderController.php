@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\OrderStatusRequest;
 use App\Models\Order;
 use Illuminate\Http\Request;
 
@@ -17,14 +18,14 @@ class OrderController extends Controller
             $search = $request->search;
             $query->where(function ($q) use ($search) {
                 $q->where('order_code', 'like', "%{$search}%")
-                  ->orWhereHas('user', function ($sub) use ($search) {
-                      $sub->where('name', 'like', "%{$search}%")
-                          ->orWhere('email', 'like', "%{$search}%")
-                          ->orWhere('phone', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('orderItems', function ($sub) use ($search) {
-                      $sub->where('passenger_name', 'like', "%{$search}%");
-                  });
+                    ->orWhereHas('user', function ($sub) use ($search) {
+                        $sub->where('name', 'like', "%{$search}%")
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('phone', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('orderItems', function ($sub) use ($search) {
+                        $sub->where('passenger_name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -48,12 +49,9 @@ class OrderController extends Controller
         return view('admin.orders.show', compact('order'));
     }
 
-    public function updateStatus(Request $request, Order $order)
+    public function updateStatus(OrderStatusRequest $request, Order $order)
     {
-        $validated = $request->validate([
-            'status' => ['required', 'in:pending,confirmed,cancelled,completed'],
-            'payment_status' => ['required', 'in:unpaid,paid,expired,refunded'],
-        ]);
+        $validated = $request->validated();
 
         $order->update($validated);
 
@@ -66,7 +64,7 @@ class OrderController extends Controller
             };
             $order->payment->update([
                 'status' => $paymentStatus,
-                'paid_at' => ($validated['payment_status'] === 'paid' && !$order->payment->paid_at) ? now() : $order->payment->paid_at,
+                'paid_at' => ($validated['payment_status'] === 'paid' && ! $order->payment->paid_at) ? now() : $order->payment->paid_at,
             ]);
         }
 

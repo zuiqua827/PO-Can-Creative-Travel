@@ -54,7 +54,7 @@ class Bus extends Model
                     break;
                 }
                 $this->busSeats()->create([
-                    'seat_number' => $row . $col,
+                    'seat_number' => $row.$col,
                     'row' => $row,
                     'column' => $col,
                     'status' => 'available',

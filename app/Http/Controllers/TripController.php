@@ -51,14 +51,14 @@ class TripController extends Controller
         // Filter time slot
         if ($timeSlot === 'morning') {
             $query->whereTime('departure_at', '>=', '05:00:00')
-                  ->whereTime('departure_at', '<', '12:00:00');
+                ->whereTime('departure_at', '<', '12:00:00');
         } elseif ($timeSlot === 'afternoon') {
             $query->whereTime('departure_at', '>=', '12:00:00')
-                  ->whereTime('departure_at', '<', '18:00:00');
+                ->whereTime('departure_at', '<', '18:00:00');
         } elseif ($timeSlot === 'night') {
             $query->where(function ($q) {
                 $q->whereTime('departure_at', '>=', '18:00:00')
-                  ->orWhereTime('departure_at', '<', '05:00:00');
+                    ->orWhereTime('departure_at', '<', '05:00:00');
             });
         }
 

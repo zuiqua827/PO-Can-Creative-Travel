@@ -9,7 +9,6 @@ use App\Models\Route;
 use App\Models\Trip;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
@@ -20,7 +19,7 @@ class DashboardController extends Controller
         $totalOrders = Order::count();
         $paidOrdersCount = Order::where('payment_status', 'paid')->count();
         $pendingOrdersCount = Order::where('payment_status', 'unpaid')->where('status', 'pending')->count();
-        
+
         $totalBuses = Bus::where('status', 'active')->count();
         $totalRoutes = Route::where('status', 'active')->count();
         $activeTrips = Trip::where('status', 'scheduled')

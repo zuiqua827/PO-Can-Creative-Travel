@@ -3,16 +3,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BusSeatStatusRequest;
 use App\Models\BusSeat;
-use Illuminate\Http\Request;
 
 class BusSeatController extends Controller
 {
-    public function updateStatus(Request $request, BusSeat $busSeat)
+    public function updateStatus(BusSeatStatusRequest $request, BusSeat $busSeat)
     {
-        $validated = $request->validate([
-            'status' => ['required', 'in:available,blocked,maintenance'],
-        ]);
+        $validated = $request->validated();
 
         $busSeat->update(['status' => $validated['status']]);
 

@@ -17,13 +17,13 @@ class OrderController extends Controller
             ->latest();
 
         if ($status === 'unpaid') {
-            $query->where('payment_status', 'unpaid')->where('status', '!=', 'cancelled');
+            $query->where('payment_status', 'unpaid')->whereNotIn('status', ['cancelled', 'expired']);
         } elseif ($status === 'confirmed') {
             $query->where('status', 'confirmed');
         } elseif ($status === 'completed') {
             $query->where('status', 'completed');
         } elseif ($status === 'cancelled') {
-            $query->where('status', 'cancelled');
+            $query->whereIn('status', ['cancelled', 'expired']);
         }
 
         $orders = $query->paginate(10)->withQueryString();
@@ -33,10 +33,8 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        // Authorization check
-        if ($order->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403, 'Anda tidak berhak melihat pesanan ini.');
-        }
+        // Enforce Policy authorization
+        $this->authorize('view', $order);
 
         $order->load(['trip.route', 'trip.bus', 'orderItems.busSeat', 'payment', 'user']);
 
@@ -45,9 +43,8 @@ class OrderController extends Controller
 
     public function cancel(Order $order)
     {
-        if ($order->user_id !== Auth::id()) {
-            abort(403);
-        }
+        // Enforce Policy authorization
+        $this->authorize('cancel', $order);
 
         if ($order->payment_status === 'paid') {
             return back()->with('error', 'Pesanan yang telah dibayar tidak dapat dibatalkan secara otomatis. Silakan hubungi customer service.');

@@ -3,9 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Bus;
-use App\Models\BusSeat;
 use App\Models\Order;
-use App\Models\OrderItem;
 use App\Models\Payment;
 use App\Models\Route;
 use App\Models\Trip;
@@ -197,7 +195,7 @@ class DatabaseSeeder extends Seeder
             $arrDate = $depDate->copy()->addHours($st['duration_hours'])->addMinutes(15);
             $route = $routes[$st['route_idx']];
             $bus = $buses[$st['bus_code']];
-            $uniqueCode = $st['code'] . '-' . $depDate->format('ymd');
+            $uniqueCode = $st['code'].'-'.$depDate->format('ymd');
 
             $trip = Trip::updateOrCreate(
                 ['trip_code' => $uniqueCode],
@@ -217,7 +215,7 @@ class DatabaseSeeder extends Seeder
 
         // 5. Seed Pre-existing Orders, Order Items & Payments
         // Order 1: Completed & Paid by Budi for trip 0 (Tomorrow Jakarta - Yogya)
-        if (!empty($trips)) {
+        if (! empty($trips)) {
             $tripSample1 = $trips[2]; // tomorrow trip
             $seatsTrip1 = $tripSample1->bus->busSeats()->take(2)->get();
 

@@ -1,66 +1,227 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CAN Travel — Bus Ticket Reservation System
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+PO CAN Travel adalah platform pemesanan tiket bus antarkota modern, andal, dan aman yang dibangun dengan Laravel 10. Platform ini dirancang untuk memudahkan calon penumpang dalam mencari rute, memilih jadwal dan armada bus, memilih nomor kursi secara real-time, hingga melakukan pemesanan dan konfirmasi pembayaran tiket secara transparan.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Authentication & Authorization**: Registrasi akun pelanggan, login aman berbasis session, proteksi brute force, serta kontrol akses ketat menggunakan Laravel Policies (Role: `admin` & `customer`).
+- **Trip Search & Schedule**: Pencarian jadwal bus interaktif berdasarkan terminal asal, terminal tujuan, tanggal keberangkatan, dan kelas bus.
+- **Seat Selection (Interactive Bus Layout)**: Tampilan denah kursi bus interaktif (format 2-2) dengan indikator status jelas (Tersedia, Terpilih, Terisi).
+- **Authoritative Booking & Concurrency Protection**: Perhitungan tarif dan validasi tiket mutlak di sisi server, dilengkapi transaksi atomik (`DB::transaction`) dan penguncian baris (`lockForUpdate`) untuk mencegah *double booking*.
+- **Order & Invoice Management**: Manajemen pemesanan tiket dengan kode unik (`PCT-YYYYMMDD-XXXXX`), histori transaksi pelanggan, dan pencetakan e-ticket/tiket digital.
+- **Payment Status Simulation**: Sistem simulasi konfirmasi pembayaran (Transfer Bank, QRIS, Virtual Account) dengan validasi referensi transaksi.
+- **Customer Profile**: Pengelolaan profil pelanggan, update nomor telepon dan alamat email secara aman.
+- **Comprehensive Admin Management**:
+  - Dashboard analitik ringkasan operasional dan pendapatan.
+  - Manajemen armada bus (kapasitas, kelas, fasilitas, plat nomor).
+  - Manajemen denah dan status kursi bus.
+  - Manajemen rute perjalanan dan estimasi durasi.
+  - Manajemen jadwal perjalanan bus (*trips*).
+  - Manajemen dan pemantauan seluruh pesanan tiket pelanggan.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- **Backend Framework**: [Laravel 10.x](https://laravel.com)
+- **Language**: PHP 8.2 / 8.3+
+- **Database & ORM**: MySQL / MariaDB dengan Eloquent ORM murni
+- **Templating**: Laravel Blade
+- **Styling**: Tailwind CSS 3.4
+- **Asset Bundler**: Vite
+- **Testing**: PHPUnit / Laravel Test Suite
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Requirements
 
-## Laravel Sponsors
+Sebelum menjalankan aplikasi di server lokal, pastikan perangkat Anda memiliki:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+- **PHP** >= 8.2 (disarankan PHP 8.3 / 8.4) dengan ekstensi `pdo_mysql`, `mbstring`, `openssl`, `bcmath`, `curl`
+- **Composer** >= 2.x
+- **MySQL** >= 8.0 atau **MariaDB** >= 10.4
+- **Node.js** >= 18.x dan **NPM** >= 9.x
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+## Installation
 
-## Contributing
+Ikuti langkah-langkah berikut untuk mengatur proyek di lingkungan lokal:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Clone repositori**:
+   ```bash
+   git clone https://github.com/zuiqua827/PO-Can-Creative-Travel.git
+   cd PO-Can-Creative-Travel
+   ```
 
-## Code of Conduct
+2. **Install PHP dependencies**:
+   ```bash
+   composer install
+   ```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. **Konfigurasi Environment**:
+   Salin berkas konfigurasi template ke `.env`:
+   ```bash
+   cp .env.example .env
+   ```
 
-## Security Vulnerabilities
+4. **Generate Application Key**:
+   ```bash
+   php artisan key:generate
+   ```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+5. **Konfigurasi Database**:
+   Buka berkas `.env` dan sesuaikan pengaturan koneksi basis data MySQL Anda:
+   ```env
+   DB_CONNECTION=mysql
+   DB_HOST=127.0.0.1
+   DB_PORT=3306
+   DB_DATABASE=po_can_travel
+   DB_USERNAME=root
+   DB_PASSWORD=
+   ```
+
+6. **Jalankan Migrasi & Seeder**:
+   Siapkan struktur tabel serta data awal (admin, rute, armada, kursi, jadwal trip):
+   ```bash
+   php artisan migrate --seed
+   ```
+
+7. **Install Node Dependencies & Build Assets**:
+   ```bash
+   npm install
+   npm run build
+   ```
+
+8. **Jalankan Server Pengembangan**:
+   ```bash
+   php artisan serve
+   ```
+   Aplikasi akan aktif di `http://127.0.0.1:8000`.
+
+---
+
+## Environment Configuration
+
+Aplikasi menggunakan konfigurasi berbasis standar Laravel `.env`. Parameter penting yang perlu diperhatikan:
+
+- `APP_NAME`: Nama aplikasi (`"PO CAN Travel"`).
+- `APP_ENV`: Lingkungan aplikasi (`local` untuk pengembangan, `production` untuk live server).
+- `APP_DEBUG`: Mode debug (`true` hanya untuk development).
+- `APP_URL`: URL utama aplikasi (`http://127.0.0.1:8000`).
+- `DB_*`: Kredensial koneksi MySQL.
+- `SESSION_DRIVER`: Driver session (default: `file`).
+
+> **PENTING**: Jangan pernah mencantumkan berkas `.env` asli atau kredensial rahasia ke dalam sistem version control (Git). Berkas `.gitignore` telah dikonfigurasi untuk melindungi data sensitif Anda.
+
+---
+
+## Database
+
+Arsitektur basis data didesain dengan integritas relasional tinggi:
+
+- **users**: Menyimpan akun pengguna dengan otorisasi berbasis kolom `role` (`admin` / `customer`).
+- **buses**: Data armada bus PO CAN Travel (Executive, Super Executive, Sleeper Suite) beserta kapasitas kursi dan fasilitas.
+- **bus_seats**: Data kursi individual per armada beserta nomor kursi dan tipe posisi.
+- **routes**: Rute perjalanan resmi antarkota (asal, tujuan, jarak, estimasi durasi waktu).
+- **trips**: Jadwal operasional perjalanan spesifik yang menghubungkan rute, armada bus, jam berangkat/tiba, dan harga tiket dasar.
+- **orders**: Data header pemesanan tiket dengan kode order unik `PCT-YYYYMMDD-XXXXX`, referensi pemesan, total tagihan, dan status (`pending`, `paid`, `cancelled`, `completed`).
+- **order_items**: Rincian tiket per kursi dalam satu transaksi pemesanan beserta nama penumpang dan identitas.
+- **payments**: Pencatatan histori pembayaran tiket, metode transaksi, waktu pembayaran, dan referensi pembayaran (`payment_reference`).
+
+---
+
+## Authentication & Authorization
+
+Sistem membedakan hak akses secara ketat:
+
+- **Customer**:
+  - Registrasi & Login.
+  - Memilih rute, armada, jadwal, dan denah kursi.
+  - Membuat pemesanan tiket dan melakukan konfirmasi pembayaran.
+  - Melihat riwayat pesanan milik sendiri.
+  - Dilindungi oleh `OrderPolicy`: Pelanggan A **dilarang keras** mengakses pesanan milik Pelanggan B (mengembalikan kode HTTP `403 Forbidden`).
+- **Admin**:
+  - Mengakses panel administratif di `/admin/dashboard`.
+  - Mengelola data bus, kursi, rute perjalanan, jadwal trip, serta memantau dan mengubah status pemesanan pelanggan.
+  - Dilindungi middleware `auth` dan `is_admin`.
+
+**Akun Demo Bawaan Seeder**:
+- **Admin**: `admin@pocan.com` / `password`
+- **Customer**: `budi@gmail.com` / `password`
+
+---
+
+## Testing
+
+Aplikasi dilengkapi dengan automated testing yang komprehensif menguji skenario autentikasi, otorisasi kepemilikan pesanan, integritas harga server-side, ketersediaan kursi, hingga pencegahan *race-condition double booking*:
+
+```bash
+php artisan test
+```
+
+Pengujian mencakup:
+- `user_registration_success` & `user_registration_validation_fails`
+- `user_login_success` & `user_login_with_invalid_credentials_fails`
+- `customer_cannot_view_another_customer_order` (Authorization Policy test)
+- `admin_authorization_enforced`
+- `public_pages_load_correctly`
+- `double_booking_is_prevented` (Row-lock concurrency test)
+- `order_creation_calculates_price_server_side` (Authoritative calculation test)
+- `payment_simulation_marks_order_as_paid_and_valid`
+
+---
+
+## Development
+
+Untuk menjalankan aplikasi selama tahap pengembangan aktif:
+
+Terminal 1 (Backend Server):
+```bash
+php artisan serve
+```
+
+Terminal 2 (Vite Hot Module Replacement):
+```bash
+npm run dev
+```
+
+---
+
+## Project Structure
+
+```
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/         # Controller aplikasi (Thin Controllers)
+│   │   │   └── Admin/          # Controller administrasi PO CAN Travel
+│   │   ├── Middleware/          # Middleware aplikasi (CheckAdmin, dll.)
+│   │   └── Requests/            # Form Request Validation mandiri
+│   │       ├── Admin/          # Validasi form rute, armada, trip, status
+│   │       ├── Auth/           # Validasi login dan registrasi
+│   │       ├── Booking/        # Validasi pemesanan tiket
+│   │       └── Profile/        # Validasi update profil
+│   ├── Models/                  # Model Eloquent (User, Bus, Trip, Order, dll.)
+│   └── Policies/                # Authorization Policies (OrderPolicy)
+├── database/
+│   ├── factories/               # Model factories untuk testing otomatis
+│   ├── migrations/              # Definisi skema tabel & indeks performa
+│   └── seeders/                 # Data inisialisasi awal sistem
+├── resources/
+│   ├── css/                     # Konfigurasi Tailwind CSS
+│   ├── js/                      # JavaScript frontend assets
+│   └── views/                   # Template Blade (layouts, admin, customer, errors)
+│       └── errors/              # Halaman error kustom (404, 403, 419, 422, 500)
+├── routes/
+│   └── web.php                  # Definisi rute web terstruktur (Public, Guest, Auth, Admin)
+└── tests/
+    └── Feature/                 # Automated feature integration tests
+```
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Proyek ini dikembangkan secara eksklusif untuk PO CAN Travel dan dilindungi di bawah lisensi proprietary.

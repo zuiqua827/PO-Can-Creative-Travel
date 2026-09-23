@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\BusRequest;
 use App\Models\Bus;
-use App\Models\BusSeat;
-use Illuminate\Http\Request;
 
 class BusController extends Controller
 {
     public function index()
     {
         $buses = Bus::withCount('busSeats')->latest()->paginate(10);
+
         return view('admin.buses.index', compact('buses'));
     }
 
@@ -20,20 +20,12 @@ class BusController extends Controller
         return view('admin.buses.create');
     }
 
-    public function store(Request $request)
+    public function store(BusRequest $request)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', 'unique:buses,code'],
-            'type' => ['required', 'string'],
-            'seat_capacity' => ['required', 'integer', 'min:10', 'max:60'],
-            'facilities' => ['nullable', 'string'], // comma separated or lines
-            'description' => ['nullable', 'string'],
-            'status' => ['required', 'in:active,maintenance,inactive'],
-        ]);
+        $validated = $request->validated();
 
         $facilitiesArray = [];
-        if (!empty($validated['facilities'])) {
+        if (! empty($validated['facilities'])) {
             $facilitiesArray = array_values(array_filter(array_map('trim', explode("\n", str_replace(',', "\n", $validated['facilities'])))));
         }
 
@@ -70,21 +62,12 @@ class BusController extends Controller
         return view('admin.buses.edit', compact('bus'));
     }
 
-    public function update(Request $request, Bus $bus)
+    public function update(BusRequest $request, Bus $bus)
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:50', 'unique:buses,code,' . $bus->id],
-            'type' => ['required', 'string'],
-            'seat_capacity' => ['required', 'integer', 'min:10', 'max:60'],
-            'facilities' => ['nullable', 'string'],
-            'description' => ['nullable', 'string'],
-            'status' => ['required', 'in:active,maintenance,inactive'],
-            'regenerate_seats' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         $facilitiesArray = [];
-        if (!empty($validated['facilities'])) {
+        if (! empty($validated['facilities'])) {
             $facilitiesArray = array_values(array_filter(array_map('trim', explode("\n", str_replace(',', "\n", $validated['facilities'])))));
         }
 
@@ -100,7 +83,7 @@ class BusController extends Controller
             'status' => $validated['status'],
         ]);
 
-        if ($request->boolean('regenerate_seats') || $oldCapacity !== (int)$validated['seat_capacity']) {
+        if ($request->boolean('regenerate_seats') || $oldCapacity !== (int) $validated['seat_capacity']) {
             $bus->generateSeats($bus->seat_capacity);
         }
 

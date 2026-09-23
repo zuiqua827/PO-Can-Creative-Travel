@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\RouteRequest;
 use App\Models\Route;
-use Illuminate\Http\Request;
 
 class RouteController extends Controller
 {
     public function index()
     {
         $routes = Route::withCount('trips')->latest()->paginate(10);
+
         return view('admin.routes.index', compact('routes'));
     }
 
@@ -19,16 +20,9 @@ class RouteController extends Controller
         return view('admin.routes.create');
     }
 
-    public function store(Request $request)
+    public function store(RouteRequest $request)
     {
-        $validated = $request->validate([
-            'origin' => ['required', 'string', 'max:255'],
-            'destination' => ['required', 'string', 'max:255'],
-            'distance' => ['nullable', 'string', 'max:100'],
-            'estimated_duration' => ['nullable', 'string', 'max:100'],
-            'base_price' => ['required', 'numeric', 'min:10000'],
-            'status' => ['required', 'in:active,inactive'],
-        ]);
+        $validated = $request->validated();
 
         Route::create($validated);
 
@@ -41,16 +35,9 @@ class RouteController extends Controller
         return view('admin.routes.edit', compact('route'));
     }
 
-    public function update(Request $request, Route $route)
+    public function update(RouteRequest $request, Route $route)
     {
-        $validated = $request->validate([
-            'origin' => ['required', 'string', 'max:255'],
-            'destination' => ['required', 'string', 'max:255'],
-            'distance' => ['nullable', 'string', 'max:100'],
-            'estimated_duration' => ['nullable', 'string', 'max:100'],
-            'base_price' => ['required', 'numeric', 'min:10000'],
-            'status' => ['required', 'in:active,inactive'],
-        ]);
+        $validated = $request->validated();
 
         $route->update($validated);
 

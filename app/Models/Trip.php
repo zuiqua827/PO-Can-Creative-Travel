@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Trip extends Model
 {
@@ -44,9 +45,14 @@ class Trip extends Model
         return $this->hasMany(Order::class);
     }
 
+    public function orderItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(OrderItem::class, Order::class);
+    }
+
     public function getFormattedPriceAttribute(): string
     {
-        return 'Rp ' . number_format($this->price, 0, ',', '.');
+        return 'Rp '.number_format($this->price, 0, ',', '.');
     }
 
     /**
@@ -69,6 +75,7 @@ class Trip extends Model
     {
         $totalSeats = $this->bus ? $this->bus->seat_capacity : 0;
         $bookedSeats = count($this->getBookedSeatIds());
+
         return max(0, $totalSeats - $bookedSeats);
     }
 }

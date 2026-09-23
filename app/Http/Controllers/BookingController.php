@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\Booking\BookingRequest;
 use App\Models\BusSeat;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -20,8 +21,14 @@ class BookingController extends Controller
      */
     public function checkout(Request $request, Trip $trip)
     {
+        // 1. Verify trip is bookable
+        if ($trip->status !== 'scheduled' || $trip->departure_at->isPast()) {
+            return redirect()->route('trips.index')
+                ->with('error', 'Jadwal perjalanan ini sudah tidak dapat dipesan.');
+        }
+
         $seatIdsRaw = $request->input('seat_ids');
-        $seatIds = is_array($seatIdsRaw) ? $seatIdsRaw : explode(',', (string)$seatIdsRaw);
+        $seatIds = is_array($seatIdsRaw) ? $seatIdsRaw : explode(',', (string) $seatIdsRaw);
         $seatIds = array_filter(array_map('intval', $seatIds));
 
         if (empty($seatIds)) {
@@ -29,27 +36,29 @@ class BookingController extends Controller
                 ->with('error', 'Silakan pilih minimal 1 kursi sebelum melanjutkan pemesanan.');
         }
 
-        // Verify seats belong to this bus
+        // 2. Verify seats belong to this bus and are operational
         $seats = BusSeat::where('bus_id', $trip->bus_id)
             ->whereIn('id', $seatIds)
+            ->where('status', 'available')
             ->orderBy('row')
             ->orderBy('column')
             ->get();
 
         if ($seats->count() !== count($seatIds)) {
             return redirect()->route('trips.show', $trip)
-                ->with('error', 'Pilihan kursi tidak valid.');
+                ->with('error', 'Salah satu atau lebih kursi yang Anda pilih tidak valid atau sedang dalam perawatan.');
         }
 
-        // Check if any seat is already booked
+        // 3. Check if any seat is already booked for this trip
         $bookedSeatIds = $trip->getBookedSeatIds();
         $conflicts = array_intersect($seatIds, $bookedSeatIds);
 
-        if (!empty($conflicts)) {
+        if (! empty($conflicts)) {
             return redirect()->route('trips.show', $trip)
                 ->with('error', 'Maaf, salah satu kursi yang Anda pilih sudah terisi. Silakan pilih kursi lain.');
         }
 
+        // 4. Server-side price calculation
         $totalAmount = $trip->price * $seats->count();
 
         return view('booking.checkout', compact('trip', 'seats', 'totalAmount'));
@@ -58,31 +67,32 @@ class BookingController extends Controller
     /**
      * Store order with concurrency control & double booking prevention
      */
-    public function store(Request $request, Trip $trip)
+    public function store(BookingRequest $request, Trip $trip)
     {
-        $request->validate([
-            'seats' => ['required', 'array', 'min:1'],
-            'seats.*' => ['required', 'integer', 'exists:bus_seats,id'],
-            'passengers' => ['required', 'array'],
-            'passengers.*.name' => ['required', 'string', 'max:255'],
-            'passengers.*.phone' => ['required', 'string', 'max:20'],
-            'passengers.*.id_number' => ['nullable', 'string', 'max:30'],
-            'payment_method' => ['required', 'string'],
-            'notes' => ['nullable', 'string', 'max:500'],
-        ], [
-            'seats.required' => 'Pilihan kursi tidak boleh kosong.',
-            'passengers.*.name.required' => 'Nama lengkap setiap penumpang wajib diisi.',
-            'passengers.*.phone.required' => 'Nomor telepon setiap penumpang wajib diisi.',
-            'payment_method.required' => 'Metode pembayaran wajib dipilih.',
-        ]);
+        // 1. Verify trip is still bookable
+        if ($trip->status !== 'scheduled' || $trip->departure_at->isPast()) {
+            return redirect()->route('trips.index')
+                ->with('error', 'Jadwal perjalanan ini sudah tidak dapat dipesan.');
+        }
 
-        $seatIds = $request->input('seats');
-        $passengers = $request->input('passengers');
+        $validated = $request->validated();
+        $seatIds = $validated['seats'];
+        $passengers = $validated['passengers'];
         $user = Auth::user();
 
         try {
-            $order = DB::transaction(function () use ($trip, $seatIds, $passengers, $user, $request) {
-                // 1. Lock and check for conflicts (Double-Booking Prevention)
+            $order = DB::transaction(function () use ($trip, $seatIds, $passengers, $user, $validated) {
+                // 2. Validate seats belong to this bus
+                $seats = BusSeat::where('bus_id', $trip->bus_id)
+                    ->whereIn('id', $seatIds)
+                    ->where('status', 'available')
+                    ->get();
+
+                if ($seats->count() !== count($seatIds)) {
+                    throw new \Exception('Pilihan kursi tidak valid untuk armada bus ini.');
+                }
+
+                // 3. Concurrency Lock: Lock conflicting seat reservations for this trip
                 $alreadyBooked = OrderItem::whereIn('bus_seat_id', $seatIds)
                     ->whereHas('order', function ($q) use ($trip) {
                         $q->where('trip_id', $trip->id)
@@ -99,12 +109,12 @@ class BookingController extends Controller
                     throw new \Exception('Maaf, salah satu kursi yang Anda pilih baru saja dipesan oleh pengguna lain. Silakan pilih kursi kembali.');
                 }
 
-                // 2. Calculate total amount
+                // 4. Server-side total calculation (never trust frontend total)
                 $seatCount = count($seatIds);
                 $totalAmount = $trip->price * $seatCount;
-                $orderCode = 'CAN-' . date('Ymd') . '-' . strtoupper(Str::random(5));
+                $orderCode = 'PCT-'.date('Ymd').'-'.strtoupper(Str::random(5));
 
-                // 3. Create Order
+                // 5. Create Order
                 $order = Order::create([
                     'user_id' => $user->id,
                     'trip_id' => $trip->id,
@@ -113,11 +123,11 @@ class BookingController extends Controller
                     'status' => 'pending',
                     'payment_status' => 'unpaid',
                     'expires_at' => Carbon::now()->addHours(2),
-                    'notes' => $request->input('notes'),
+                    'notes' => $validated['notes'] ?? null,
                 ]);
 
-                // 4. Create Order Items for each seat
-                foreach ($seatIds as $idx => $seatId) {
+                // 6. Create Order Items for each seat with passenger info
+                foreach ($seatIds as $seatId) {
                     $passengerData = $passengers[$seatId] ?? [
                         'name' => $user->name,
                         'phone' => $user->phone,
@@ -134,12 +144,12 @@ class BookingController extends Controller
                     ]);
                 }
 
-                // 5. Create Payment record
+                // 7. Create Payment record
                 Payment::create([
                     'order_id' => $order->id,
                     'user_id' => $user->id,
-                    'payment_method' => $request->input('payment_method'),
-                    'payment_reference' => 'PAY-' . strtoupper(Str::random(10)),
+                    'payment_method' => $validated['payment_method'],
+                    'payment_reference' => 'PAY-'.strtoupper(Str::random(10)),
                     'amount' => $totalAmount,
                     'status' => 'pending',
                     'paid_at' => null,
@@ -162,17 +172,15 @@ class BookingController extends Controller
      */
     public function payment(Order $order)
     {
-        // Ensure user can only view their own order (or admin)
-        if ($order->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403, 'Akses tidak diizinkan.');
-        }
+        // Policy check for authorization
+        $this->authorize('view', $order);
 
         $order->load(['trip.route', 'trip.bus', 'orderItems.busSeat', 'payment']);
 
         // Check if order expired
         if ($order->payment_status === 'unpaid' && $order->expires_at && $order->expires_at->isPast()) {
             $order->update([
-                'status' => 'cancelled',
+                'status' => 'expired',
                 'payment_status' => 'expired',
             ]);
         }
@@ -185,9 +193,7 @@ class BookingController extends Controller
      */
     public function processPayment(Request $request, Order $order)
     {
-        if ($order->user_id !== Auth::id() && !Auth::user()->isAdmin()) {
-            abort(403);
-        }
+        $this->authorize('view', $order);
 
         if ($order->payment_status === 'paid') {
             return redirect()->route('orders.show', $order)

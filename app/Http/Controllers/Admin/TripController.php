@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\TripRequest;
 use App\Models\Bus;
 use App\Models\Route;
 use App\Models\Trip;
@@ -44,22 +45,13 @@ class TripController extends Controller
         return view('admin.trips.create', compact('routes', 'buses'));
     }
 
-    public function store(Request $request)
+    public function store(TripRequest $request)
     {
-        $validated = $request->validate([
-            'bus_id' => ['required', 'exists:buses,id'],
-            'route_id' => ['required', 'exists:routes,id'],
-            'departure_at' => ['required', 'date'],
-            'arrival_at' => ['required', 'date', 'after:departure_at'],
-            'price' => ['required', 'numeric', 'min:10000'],
-            'boarding_point' => ['nullable', 'string', 'max:255'],
-            'drop_off_point' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', 'in:scheduled,boarding,departed,completed,cancelled'],
-        ]);
+        $validated = $request->validated();
 
         $route = Route::findOrFail($validated['route_id']);
         $depTime = Carbon::parse($validated['departure_at']);
-        $tripCode = 'TRIP-' . strtoupper(Str::slug(substr($route->origin, 0, 3) . substr($route->destination, 0, 3))) . '-' . $depTime->format('ymd') . '-' . rand(10, 99);
+        $tripCode = 'TRIP-'.strtoupper(Str::slug(substr($route->origin, 0, 3).substr($route->destination, 0, 3))).'-'.$depTime->format('ymd').'-'.rand(10, 99);
 
         Trip::create(array_merge($validated, [
             'trip_code' => $tripCode,
@@ -79,18 +71,9 @@ class TripController extends Controller
         return view('admin.trips.edit', compact('trip', 'routes', 'buses'));
     }
 
-    public function update(Request $request, Trip $trip)
+    public function update(TripRequest $request, Trip $trip)
     {
-        $validated = $request->validate([
-            'bus_id' => ['required', 'exists:buses,id'],
-            'route_id' => ['required', 'exists:routes,id'],
-            'departure_at' => ['required', 'date'],
-            'arrival_at' => ['required', 'date', 'after:departure_at'],
-            'price' => ['required', 'numeric', 'min:10000'],
-            'boarding_point' => ['nullable', 'string', 'max:255'],
-            'drop_off_point' => ['nullable', 'string', 'max:255'],
-            'status' => ['required', 'in:scheduled,boarding,departed,completed,cancelled'],
-        ]);
+        $validated = $request->validated();
 
         $trip->update($validated);
 
