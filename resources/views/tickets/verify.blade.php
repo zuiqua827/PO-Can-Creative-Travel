@@ -24,6 +24,11 @@
 <div class="min-h-screen bg-slate-100 py-10 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
     <div class="max-w-lg w-full">
 
+        <!-- CAN Travel Official Logo Header -->
+        <div class="text-center mb-6 flex justify-center">
+            <x-logo size="lg" variant="dark" />
+        </div>
+
         <!-- Verification Result Card -->
         <div class="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden">
             

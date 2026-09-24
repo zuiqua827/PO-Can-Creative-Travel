@@ -6,7 +6,7 @@
     <title>@yield('title', 'CAN Travel — Perjalanan Nyaman, Berangkat Tanpa Khawatir')</title>
     <meta name="description" content="@yield('meta_description', 'Pesan tiket bus CAN Travel online dengan mudah dan aman. Pilihan armada Executive dan Sleeper dengan fasilitas modern, denah kursi interaktif, dan e-tiket instan.')">
     <link rel="canonical" href="{{ url()->current() }}">
-    <meta name="theme-color" content="#0270c7">
+    <meta name="theme-color" content="#062A52">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -14,11 +14,13 @@
     <meta property="og:title" content="@yield('title', 'CAN Travel — Perjalanan Nyaman, Berangkat Tanpa Khawatir')">
     <meta property="og:description" content="@yield('meta_description', 'Pesan tiket bus CAN Travel online dengan mudah dan aman. Pilihan armada Executive dan Sleeper dengan fasilitas modern, denah kursi interaktif, dan e-tiket instan.')">
     <meta property="og:url" content="{{ url()->current() }}">
+    <meta property="og:image" content="{{ asset('images/logo/can-travel-logo.png') }}">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="@yield('title', 'CAN Travel — Perjalanan Nyaman, Berangkat Tanpa Khawatir')">
     <meta name="twitter:description" content="@yield('meta_description', 'Pesan tiket bus CAN Travel online dengan mudah dan aman.')">
+    <meta name="twitter:image" content="{{ asset('images/logo/can-travel-logo.png') }}">
 
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -33,6 +35,7 @@
     </script>
 
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo/can-travel-logo.png') }}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,10 +56,10 @@
     </a>
 
     <!-- Top Announcement Bar -->
-    <aside class="bg-slate-950 text-slate-300 text-xs py-2 px-4 border-b border-slate-800" aria-label="Informasi Layanan">
+    <aside class="bg-navy-950 text-slate-300 text-xs py-2 px-4 border-b border-navy-900" aria-label="Informasi Layanan">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
             <div class="flex items-center space-x-2">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-500/20 text-brand-300 border border-brand-500/30">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-500/20 text-accent-400 border border-accent-500/30">
                     Resmi
                 </span>
                 <span>Portal Pemesanan Tiket Bus Online Terpercaya — <strong>CAN Travel</strong></span>
@@ -285,9 +288,9 @@
     </main>
 
     <!-- Professional Footer -->
-    <footer class="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800 mt-20" aria-label="Footer Resmi CAN Travel">
+    <footer class="bg-navy-900 text-slate-300 pt-16 pb-12 border-t border-navy-800 mt-20" aria-label="Footer Resmi CAN Travel">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-navy-800">
 
                 <!-- Brand Info -->
                 <div class="space-y-4">

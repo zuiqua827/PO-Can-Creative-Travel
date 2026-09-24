@@ -1,14 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <defs>
-    <linearGradient id="canGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#0270c7"/>
-      <stop offset="50%" stop-color="#0e8ee9"/>
-      <stop offset="100%" stop-color="#38aaf6"/>
-    </linearGradient>
-  </defs>
-  <rect width="32" height="32" rx="8" fill="url(#canGrad)"/>
-  <path d="M6 21C6 21.55 6.45 22 7 22H8M24 22H25C25.55 22 26 21.55 26 21M6 21V11C6 8.79 7.79 7 10 7H22C24.21 7 26 8.79 26 11V21M6 21H26" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
-  <path d="M6 13H26" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"/>
-  <circle cx="10" cy="18" r="1.8" fill="#ffffff"/>
-  <circle cx="22" cy="18" r="1.8" fill="#ffffff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <rect width="64" height="64" rx="16" fill="#062A52"/>
+  <!-- Circular Arc C in CAN Blue -->
+  <path d="M46 16C38 10 24 12 18 20C12 28 12 40 20 48C28 56 42 54 48 46" stroke="#1685D8" stroke-width="5" stroke-linecap="round"/>
+  <!-- Orange Track Swoosh -->
+  <path d="M22 50C28 54 36 53 44 48C48 45 52 40 54 36" stroke="#F5A623" stroke-width="4" stroke-linecap="round"/>
+  <!-- Modern Coach Outline in White -->
+  <path d="M22 36L26 25C27 22 29 21 32 21H42C45 21 47 23 48 26L50 36C51 38 50 40 48 40H24C22 40 21 38 22 36Z" fill="#1268B3" stroke="#FFFFFF" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Windshield and Windows -->
+  <path d="M38 24H44L47 31H38V24Z" fill="#EAF3FB"/>
+  <path d="M28 25H35V31H26L28 25Z" fill="#EAF3FB"/>
+  <!-- Headlights -->
+  <circle cx="28" cy="36" r="1.8" fill="#F5A623"/>
+  <circle cx="46" cy="36" r="1.8" fill="#FFFFFF"/>
 </svg>

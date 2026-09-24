@@ -98,6 +98,10 @@
         @else
             <!-- Status Header Card (Active Pending Order) -->
             <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-sm text-center mb-8">
+                <div class="mb-4 flex justify-center">
+                    <x-logo size="md" variant="dark" />
+                </div>
+
                 <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 mx-auto flex items-center justify-center mb-4">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>

@@ -4,7 +4,7 @@
 @section('meta_description', 'Pilih nomor kursi favorit pada denah bus interaktif ' . $trip->bus->name . ' rute ' . $trip->route->origin . ' ke ' . $trip->route->destination . ' bersama CAN Travel.')
 
 @section('content')
-<div class="bg-slate-900 text-white py-8 border-b border-slate-800"
+<div class="bg-navy-900 text-white py-8 border-b border-navy-800"
      id="seat-picker-root"
      x-data="{
         selectedSeats: [],

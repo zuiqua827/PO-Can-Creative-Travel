@@ -9,27 +9,54 @@ export default {
     extend: {
       colors: {
         brand: {
-          50: '#f0f7ff',
-          100: '#e0effe',
-          200: '#bae0fd',
-          300: '#7cc7fb',
-          400: '#38aaf6',
-          500: '#0e8ee9',
-          600: '#0270c7',
-          700: '#0359a1',
-          800: '#074c85',
-          900: '#0c406e',
-          950: '#082849',
+          50: '#F5F8FC',
+          100: '#EAF3FB',
+          200: '#D9E3EF',
+          300: '#A0C9EF',
+          400: '#4B9FE5',
+          500: '#1685D8', // Bright Blue
+          600: '#1268B3', // Primary Blue
+          700: '#0E5596',
+          800: '#0B3A70', // Navy
+          900: '#062A52', // Deep Navy
+          950: '#041B35',
         },
         navy: {
-          800: '#111827',
-          900: '#0B1120',
-          950: '#050811',
+          700: '#102A43',
+          800: '#0B3A70',
+          900: '#062A52',
+          950: '#03172E',
+        },
+        accent: {
+          50: '#FFF9ED',
+          100: '#FFF2D7',
+          200: '#FFE1A6',
+          300: '#FFCE74',
+          400: '#FFB52E', // Bright Orange
+          500: '#F5A623', // Accent Orange
+          600: '#DF8E12',
+          700: '#B56F06',
+          800: '#8C5204',
+          900: '#643702',
         },
         gold: {
-          400: '#fbbf24',
-          500: '#f59e0b',
-          600: '#d97706',
+          400: '#FFB52E',
+          500: '#F5A623',
+          600: '#DF8E12',
+        },
+        can: {
+          deepnavy: '#062A52',
+          navy: '#0B3A70',
+          primary: '#1268B3',
+          brightblue: '#1685D8',
+          accent: '#F5A623',
+          brightorange: '#FFB52E',
+          white: '#FFFFFF',
+          lightbg: '#F5F8FC',
+          softblue: '#EAF3FB',
+          text: '#102A43',
+          subtext: '#52667A',
+          border: '#D9E3EF',
         }
       },
       fontFamily: {

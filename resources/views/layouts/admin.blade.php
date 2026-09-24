@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Panel — CAN Travel')</title>
+    <meta name="theme-color" content="#062A52">
     <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
+    <link rel="icon" type="image/png" href="{{ asset('images/logo/can-travel-logo.png') }}">
 
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -28,16 +30,16 @@
     <div id="admin-mobile-backdrop"
          x-show="sidebarOpen"
          @click="sidebarOpen = false"
-         class="fixed inset-0 z-40 bg-slate-900/60 backdrop-blur-sm md:hidden"
+         class="fixed inset-0 z-40 bg-navy-950/70 backdrop-blur-sm md:hidden"
          style="display: none;"></div>
 
     <!-- Admin Sidebar -->
     <aside id="admin-sidebar"
            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
-           class="fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-300 transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:flex md:flex-col md:w-64 border-r border-slate-800 -translate-x-full md:translate-x-0">
+           class="fixed inset-y-0 left-0 z-50 w-72 bg-navy-900 text-slate-300 transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:flex md:flex-col md:w-64 border-r border-navy-800 -translate-x-full md:translate-x-0">
 
         <!-- Sidebar Brand -->
-        <div class="h-20 flex items-center justify-between px-6 border-b border-slate-800 bg-slate-950">
+        <div class="h-20 flex items-center justify-between px-6 border-b border-navy-800 bg-navy-950">
             <a href="{{ route('admin.dashboard') }}" class="flex items-center space-x-3">
                 <x-logo size="sm" variant="light" :withSubtitle="false" />
             </a>

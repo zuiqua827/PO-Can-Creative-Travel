@@ -5,22 +5,29 @@
 
 @section('content')
 <!-- Hero Section -->
-<section class="relative bg-gradient-to-b from-slate-950 via-slate-900 to-navy-950 text-white pt-16 pb-32 overflow-hidden">
+<section class="relative bg-gradient-to-b from-navy-950 via-navy-900 to-brand-950 text-white pt-14 pb-32 overflow-hidden">
     <!-- Subtle Background Ambient Light -->
-    <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute top-1/2 -left-40 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
-    <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none"></div>
+    <div class="absolute -top-40 -right-40 w-96 h-96 bg-brand-500/15 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/2 -left-40 w-96 h-96 bg-accent-500/10 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute inset-0 bg-[radial-gradient(#0B3A70_1px,transparent_1px)] [background-size:24px_24px] opacity-25 pointer-events-none"></div>
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div class="text-center max-w-3xl mx-auto mb-12">
-            <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-brand-500/10 border border-brand-500/25 text-brand-300 text-xs font-semibold uppercase tracking-wider mb-6">
-                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span>Pemesanan Tiket Bus Resmi & Terpercaya</span>
+            <!-- Official Brand Logo Presentation in Hero -->
+            <div class="mb-5 inline-flex items-center">
+                <x-logo size="xl" variant="light" />
+            </div>
+
+            <div class="block">
+                <div class="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-accent-500/15 border border-accent-500/30 text-accent-400 text-xs font-bold uppercase tracking-wider mb-6">
+                    <span class="w-2 h-2 rounded-full bg-accent-400 animate-pulse"></span>
+                    <span>Platform Pemesanan Tiket Bus Online Resmi</span>
+                </div>
             </div>
             
             <h1 class="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-tight">
                 Perjalanan Nyaman,<br>
-                <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-sky-300 to-blue-200">
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-accent-400 via-sky-300 to-white">
                     Berangkat Tanpa Khawatir.
                 </span>
             </h1>
@@ -30,10 +37,10 @@
             </p>
 
             <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
-                <a href="#search-card" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-brand-600 hover:bg-brand-700 text-white shadow-lg shadow-brand-600/30 transition duration-150">
+                <a href="#search-card" class="px-7 py-3.5 rounded-xl font-black text-sm bg-gradient-to-r from-accent-400 via-accent-500 to-accent-600 hover:from-accent-500 hover:to-accent-600 text-navy-950 shadow-lg shadow-accent-500/25 transition duration-150">
                     Cari Tiket Sekarang
                 </a>
-                <a href="{{ route('trips.index') }}" class="px-6 py-3.5 rounded-xl font-bold text-sm bg-white/10 hover:bg-white/15 text-white border border-white/20 transition duration-150">
+                <a href="{{ route('trips.index') }}" class="px-7 py-3.5 rounded-xl font-bold text-sm bg-white/10 hover:bg-white/20 text-white border border-white/20 transition duration-150">
                     Lihat Semua Jadwal
                 </a>
             </div>
@@ -43,7 +50,7 @@
         <div id="search-card" class="bg-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-slate-100 text-slate-900 max-w-5xl mx-auto -mb-20 relative z-20">
             <div class="mb-5 pb-3 border-b border-slate-100 flex items-center justify-between">
                 <div class="flex items-center space-x-2">
-                    <span class="w-2.5 h-2.5 rounded-full bg-brand-600"></span>
+                    <span class="w-2.5 h-2.5 rounded-full bg-accent-500"></span>
                     <h2 class="text-base font-extrabold text-slate-900">Cari Jadwal Perjalanan Bus</h2>
                 </div>
                 <span class="text-xs font-semibold text-slate-500 hidden sm:inline">Konfirmasi Langsung &bull; E-Tiket Instan</span>
@@ -91,8 +98,8 @@
 
                 <!-- Search CTA Button -->
                 <div>
-                    <button type="submit" class="w-full py-3.5 px-4 rounded-xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 shadow-lg shadow-brand-600/30 transition flex items-center justify-center space-x-2">
-                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <button type="submit" class="w-full py-3.5 px-4 rounded-xl text-sm font-black text-navy-950 bg-gradient-to-r from-accent-400 via-accent-500 to-accent-600 hover:from-accent-500 hover:to-accent-600 shadow-lg shadow-accent-500/25 transition flex items-center justify-center space-x-2">
+                        <svg class="w-4 h-4 text-navy-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                         </svg>
                         <span>Cari Tiket</span>

@@ -41,7 +41,15 @@
             <span class="font-bold text-slate-800">Checkout Tiket</span>
         </div>
 
-        <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mb-8">Informasi Penumpang & Checkout</h1>
+        <div class="mb-8 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Informasi Penumpang &amp; Checkout</h1>
+                <p class="text-xs text-slate-500 mt-1">Lengkapi data penumpang sesuai identitas resmi untuk penerbitan tiket.</p>
+            </div>
+            <div class="hidden sm:block">
+                <x-logo size="md" variant="dark" />
+            </div>
+        </div>
 
         <form action="{{ route('booking.store', $trip) }}" method="POST" x-data="{ submitting: false }" @submit="submitting = true">
             @csrf

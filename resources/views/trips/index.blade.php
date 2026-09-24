@@ -4,11 +4,11 @@
 @section('meta_description', 'Lihat jadwal keberangkatan bus dan pesan tiket online resmi CAN Travel. Pilihan kelas Executive dan Sleeper, harga transparan, dan ketersediaan kursi real-time.')
 
 @section('content')
-<div class="bg-slate-900 py-10 border-b border-slate-800 text-white">
+<div class="bg-navy-900 py-10 border-b border-navy-800 text-white">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-5">
-            <span class="text-xs font-bold text-brand-400 uppercase tracking-wider">Jadwal Keberangkatan Resmi</span>
-            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white mt-0.5">Cari & Pesan Jadwal Bus</h1>
+            <span class="text-xs font-bold text-accent-400 uppercase tracking-wider">Jadwal Keberangkatan Resmi</span>
+            <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white mt-0.5">Cari &amp; Pesan Jadwal Bus</h1>
         </div>
         
         <!-- Search Filter Header Bar -->
@@ -50,9 +50,9 @@
             </div>
 
             <div class="flex items-end">
-                <button type="submit" class="w-full py-2.5 px-4 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white shadow-md transition flex items-center justify-center space-x-1.5">
-                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                <button type="submit" class="w-full py-2.5 px-4 rounded-xl text-xs font-black bg-gradient-to-r from-accent-400 via-accent-500 to-accent-600 hover:from-accent-500 hover:to-accent-600 text-navy-950 shadow-md transition flex items-center justify-center space-x-1.5">
+                    <svg class="w-4 h-4 text-navy-950" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
                     <span>Cari Jadwal</span>
                 </button>
