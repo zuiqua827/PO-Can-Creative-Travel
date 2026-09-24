@@ -60,6 +60,16 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $demoCustomer = User::firstOrCreate(
+            ['email' => 'demo@pocan.com'],
+            [
+                'name' => 'Demo User CAN Travel',
+                'phone' => '081211223344',
+                'role' => 'customer',
+                'password' => Hash::make('password'),
+            ]
+        );
+
         // 2. Seed Buses & Seats
         $busesData = [
             [
@@ -213,57 +223,75 @@ class DatabaseSeeder extends Seeder
             $trips[] = $trip;
         }
 
-        // 5. Seed Pre-existing Orders, Order Items & Payments
-        // Order 1: Completed & Paid by Budi for trip 0 (Tomorrow Jakarta - Yogya)
-        if (! empty($trips)) {
-            $tripSample1 = $trips[2]; // tomorrow trip
+        // 5. Operational Cleanliness Rule:
+        // DUMMY USER != DUMMY SEAT OCCUPANCY
+        // Demo accounts (admin, budi, siti, ahmad, demo) are created for testing and UI access,
+        // but default seed does NOT occupy seats or create active bookings.
+        // Optional demo transactions can be seeded via seedDemoBookings() if explicitly requested.
+        if (config('app.seed_demo_bookings', false)) {
+            $this->seedDemoBookings($trips, $customer1, $customer2);
+        }
+    }
+
+    /**
+     * Opt-in demo bookings seeder. Never executed by default in clean production/demo mode.
+     */
+    public function seedDemoBookings(array $trips, User $customer1, User $customer2): void
+    {
+        if (empty($trips)) {
+            return;
+        }
+
+        $tripSample1 = $trips[2] ?? null;
+        if ($tripSample1) {
             $seatsTrip1 = $tripSample1->bus->busSeats()->take(2)->get();
+            if ($seatsTrip1->count() >= 2) {
+                $order1 = Order::updateOrCreate(
+                    ['order_code' => 'CAN-ORD-20260901-001'],
+                    [
+                        'user_id' => $customer1->id,
+                        'trip_id' => $tripSample1->id,
+                        'total_amount' => $tripSample1->price * 2,
+                        'status' => 'confirmed',
+                        'payment_status' => 'paid',
+                        'expires_at' => null,
+                        'notes' => 'Tolong sediakan kursi bersebelahan.',
+                    ]
+                );
 
-            $order1 = Order::updateOrCreate(
-                ['order_code' => 'CAN-ORD-20260901-001'],
-                [
-                    'user_id' => $customer1->id,
-                    'trip_id' => $tripSample1->id,
-                    'total_amount' => $tripSample1->price * 2,
-                    'status' => 'confirmed',
-                    'payment_status' => 'paid',
-                    'expires_at' => null,
-                    'notes' => 'Tolong sediakan kursi bersebelahan.',
-                ]
-            );
+                $order1->orderItems()->delete();
+                $order1->orderItems()->create([
+                    'bus_seat_id' => $seatsTrip1[0]->id,
+                    'passenger_name' => 'Budi Santoso',
+                    'passenger_phone' => '081298765432',
+                    'passenger_id_number' => '3271012345670001',
+                    'price' => $tripSample1->price,
+                ]);
+                $order1->orderItems()->create([
+                    'bus_seat_id' => $seatsTrip1[1]->id,
+                    'passenger_name' => 'Anisa Santoso',
+                    'passenger_phone' => '081298765433',
+                    'passenger_id_number' => '3271012345670002',
+                    'price' => $tripSample1->price,
+                ]);
 
-            // Order items
-            $order1->orderItems()->delete();
-            $order1->orderItems()->create([
-                'bus_seat_id' => $seatsTrip1[0]->id,
-                'passenger_name' => 'Budi Santoso',
-                'passenger_phone' => '081298765432',
-                'passenger_id_number' => '3271012345670001',
-                'price' => $tripSample1->price,
-            ]);
-            $order1->orderItems()->create([
-                'bus_seat_id' => $seatsTrip1[1]->id,
-                'passenger_name' => 'Anisa Santoso',
-                'passenger_phone' => '081298765433',
-                'passenger_id_number' => '3271012345670002',
-                'price' => $tripSample1->price,
-            ]);
+                Payment::updateOrCreate(
+                    ['payment_reference' => 'PAY-CAN-20260901-001'],
+                    [
+                        'order_id' => $order1->id,
+                        'user_id' => $customer1->id,
+                        'payment_method' => 'BCA Virtual Account',
+                        'amount' => $order1->total_amount,
+                        'status' => 'success',
+                        'paid_at' => now()->subDay(),
+                        'proof_file' => null,
+                    ]
+                );
+            }
+        }
 
-            Payment::updateOrCreate(
-                ['payment_reference' => 'PAY-CAN-20260901-001'],
-                [
-                    'order_id' => $order1->id,
-                    'user_id' => $customer1->id,
-                    'payment_method' => 'BCA Virtual Account',
-                    'amount' => $order1->total_amount,
-                    'status' => 'success',
-                    'paid_at' => now()->subDay(),
-                    'proof_file' => null,
-                ]
-            );
-
-            // Order 2: Another order by Siti
-            $tripSample2 = $trips[3]; // Semarang trip
+        $tripSample2 = $trips[3] ?? null;
+        if ($tripSample2) {
             $seatsTrip2 = $tripSample2->bus->busSeats()->skip(4)->take(1)->get();
             if ($seatsTrip2->isNotEmpty()) {
                 $order2 = Order::updateOrCreate(

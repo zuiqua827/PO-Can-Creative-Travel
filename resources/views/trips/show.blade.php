@@ -4,48 +4,13 @@
 @section('meta_description', 'Pilih nomor kursi favorit pada denah bus interaktif ' . $trip->bus->name . ' rute ' . $trip->route->origin . ' ke ' . $trip->route->destination . ' bersama CAN Travel.')
 
 @section('content')
-<div class="bg-navy-900 text-white py-8 border-b border-navy-800"
-     id="seat-picker-root"
-     x-data="{
-        selectedSeats: [],
-        seatPrice: {{ $trip->price }},
-        maxSeats: 5,
-        maxSeatWarning: false,
-        accessibilityAnnouncement: '',
-        toggleSeat(seatId, seatNumber) {
-            if (this.selectedSeats.some(s => s.id === seatId)) {
-                this.selectedSeats = this.selectedSeats.filter(s => s.id !== seatId);
-                this.accessibilityAnnouncement = 'Pilihan kursi ' + seatNumber + ' dibatalkan. Tersisa ' + this.selectedSeats.length + ' kursi terpilih.';
-            } else {
-                if (this.selectedSeats.length >= this.maxSeats) {
-                    this.maxSeatWarning = true;
-                    this.accessibilityAnnouncement = 'Peringatan: Maksimal pemesanan adalah ' + this.maxSeats + ' kursi per transaksi.';
-                    setTimeout(() => { this.maxSeatWarning = false; }, 4000);
-                    return;
-                }
-                this.selectedSeats.push({ id: seatId, number: seatNumber });
-                this.accessibilityAnnouncement = 'Kursi ' + seatNumber + ' berhasil dipilih. Total ' + this.selectedSeats.length + ' kursi terpilih.';
-            }
-            if (window.syncSeatSelectionFallback) {
-                window.syncSeatSelectionFallback(this.selectedSeats);
-            }
-        },
-        isSelected(seatId) {
-            return this.selectedSeats.some(s => s.id === seatId);
-        },
-        getTotalPrice() {
-            return (this.selectedSeats.length * this.seatPrice).toLocaleString('id-ID');
-        },
-        getSeatIdsString() {
-            return this.selectedSeats.map(s => s.id).join(',');
-        }
-     }">
+<div class="bg-navy-900 text-white py-8 border-b border-navy-800" id="seat-picker-root">
 
     <!-- WCAG 2.1 AA Dynamic Screen Reader Announcer -->
-    <div id="accessibility-announcer" class="sr-only" aria-live="polite" aria-atomic="true" x-text="accessibilityAnnouncement"></div>
+    <div id="accessibility-announcer" class="sr-only" aria-live="polite" aria-atomic="true" data-announcement="accessibilityAnnouncement" x-text="accessibilityAnnouncement"></div>
 
     <!-- Inline Non-blocking Max Seats Alert Banner -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" x-show="maxSeatWarning" x-cloak x-transition id="max-seat-alert-box" style="display: none;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" id="max-seat-alert-box" style="display: none;">
         <div class="mb-4 p-4 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-200 text-sm font-semibold flex items-center justify-between shadow-lg backdrop-blur-sm" role="alert">
             <div class="flex items-center space-x-3">
                 <svg class="w-5 h-5 text-amber-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -53,7 +18,7 @@
                 </svg>
                 <span>Maksimal pemesanan adalah 5 kursi per transaksi.</span>
             </div>
-            <button type="button" @click="maxSeatWarning = false; document.getElementById('max-seat-alert-box').style.display='none'" class="text-amber-300 hover:text-white text-xs font-bold px-2 py-1 rounded-lg bg-amber-500/30 transition">
+            <button type="button" id="close-max-seat-alert" class="text-amber-300 hover:text-white text-xs font-bold px-2 py-1 rounded-lg bg-amber-500/30 transition">
                 Tutup
             </button>
         </div>
@@ -174,33 +139,42 @@
 
                                         @if($isConfirmed || ($isBooked && !$isHeld))
                                             <!-- Booked / Confirmed Disabled Seat -->
-                                            <div class="w-12 h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
-                                                title="Kursi {{ $seat->seat_number }} sudah terisi" aria-disabled="true" data-seat-status="booked">
+                                            <button type="button" disabled
+                                                    class="w-12 h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
+                                                    title="Kursi {{ $seat->seat_number }} sudah terisi"
+                                                    aria-label="Kursi {{ $seat->seat_number }}, sudah terisi"
+                                                    aria-disabled="true"
+                                                    data-seat-id="{{ $seat->id }}"
+                                                    data-seat-number="{{ $seat->seat_number }}"
+                                                    data-seat-status="booked">
                                                 <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
                                                 <span class="text-[8px] uppercase font-semibold">Terisi</span>
-                                            </div>
+                                            </button>
                                         @elseif($isHeld)
                                             <!-- Held / Active Reservation Seat -->
-                                            <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
-                                                title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain" aria-disabled="true" data-seat-status="held">
+                                            <button type="button" disabled
+                                                    class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
+                                                    title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain"
+                                                    aria-label="Kursi {{ $seat->seat_number }}, sedang ditahan"
+                                                    aria-disabled="true"
+                                                    data-seat-id="{{ $seat->id }}"
+                                                    data-seat-number="{{ $seat->seat_number }}"
+                                                    data-seat-status="held">
                                                 <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
                                                 <span class="text-[8px] uppercase font-semibold">Tertahan</span>
-                                            </div>
+                                            </button>
                                         @else
                                             <!-- Available Interactive Seat -->
                                             <button type="button"
                                                     id="seat-btn-{{ $seat->id }}"
                                                     data-seat-id="{{ $seat->id }}"
                                                     data-seat-number="{{ $seat->seat_number }}"
-                                                    @click="toggleSeat({{ $seat->id }}, '{{ $seat->seat_number }}')"
-                                                    :class="isSelected({{ $seat->id }})
-                                                        ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/30 border-brand-600 scale-105'
-                                                        : 'bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm'"
+                                                    data-seat-status="available"
                                                     aria-label="Kursi {{ $seat->seat_number }}, tersedia, tarif {{ $trip->formatted_price }}"
-                                                    :aria-pressed="isSelected({{ $seat->id }})"
-                                                    class="seat-picker-btn w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300">
-                                                <span class="seat-num-text" x-text="isSelected({{ $seat->id }}) ? '✓' : '{{ $seat->seat_number }}'">{{ $seat->seat_number }}</span>
-                                                <span class="seat-status-text text-[8px] uppercase font-semibold" x-text="isSelected({{ $seat->id }}) ? 'Pilih' : ''"></span>
+                                                    aria-pressed="false"
+                                                    class="seat-picker-btn cursor-pointer w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm">
+                                                <span class="seat-num-text text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                <span class="seat-status-text text-[8px] uppercase font-semibold"></span>
                                             </button>
                                         @endif
                                     @endforeach
@@ -222,33 +196,42 @@
 
                                         @if($isConfirmed || ($isBooked && !$isHeld))
                                             <!-- Booked / Confirmed Disabled Seat -->
-                                            <div class="w-12 h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
-                                                title="Kursi {{ $seat->seat_number }} sudah terisi" aria-disabled="true" data-seat-status="booked">
+                                            <button type="button" disabled
+                                                    class="w-12 h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
+                                                    title="Kursi {{ $seat->seat_number }} sudah terisi"
+                                                    aria-label="Kursi {{ $seat->seat_number }}, sudah terisi"
+                                                    aria-disabled="true"
+                                                    data-seat-id="{{ $seat->id }}"
+                                                    data-seat-number="{{ $seat->seat_number }}"
+                                                    data-seat-status="booked">
                                                 <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
                                                 <span class="text-[8px] uppercase font-semibold">Terisi</span>
-                                            </div>
+                                            </button>
                                         @elseif($isHeld)
                                             <!-- Held / Active Reservation Seat -->
-                                            <div class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
-                                                title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain" aria-disabled="true" data-seat-status="held">
+                                            <button type="button" disabled
+                                                    class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
+                                                    title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain"
+                                                    aria-label="Kursi {{ $seat->seat_number }}, sedang ditahan"
+                                                    aria-disabled="true"
+                                                    data-seat-id="{{ $seat->id }}"
+                                                    data-seat-number="{{ $seat->seat_number }}"
+                                                    data-seat-status="held">
                                                 <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
                                                 <span class="text-[8px] uppercase font-semibold">Tertahan</span>
-                                            </div>
+                                            </button>
                                         @else
                                             <!-- Available Interactive Seat -->
                                             <button type="button"
                                                     id="seat-btn-{{ $seat->id }}"
                                                     data-seat-id="{{ $seat->id }}"
                                                     data-seat-number="{{ $seat->seat_number }}"
-                                                    @click="toggleSeat({{ $seat->id }}, '{{ $seat->seat_number }}')"
-                                                    :class="isSelected({{ $seat->id }})
-                                                        ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/30 border-brand-600 scale-105'
-                                                        : 'bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm'"
+                                                    data-seat-status="available"
                                                     aria-label="Kursi {{ $seat->seat_number }}, tersedia, tarif {{ $trip->formatted_price }}"
-                                                    :aria-pressed="isSelected({{ $seat->id }})"
-                                                    class="seat-picker-btn w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300">
-                                                <span class="seat-num-text" x-text="isSelected({{ $seat->id }}) ? '✓' : '{{ $seat->seat_number }}'">{{ $seat->seat_number }}</span>
-                                                <span class="seat-status-text text-[8px] uppercase font-semibold" x-text="isSelected({{ $seat->id }}) ? 'Pilih' : ''"></span>
+                                                    aria-pressed="false"
+                                                    class="seat-picker-btn cursor-pointer w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm">
+                                                <span class="seat-num-text text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                <span class="seat-status-text text-[8px] uppercase font-semibold"></span>
                                             </button>
                                         @endif
                                     @endforeach
@@ -300,24 +283,12 @@
                     <div class="mb-4">
                         <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kursi Dipilih</label>
 
-                        <template x-if="selectedSeats.length === 0">
-                            <div class="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-center text-xs text-slate-400 font-medium" id="empty-seats-placeholder">
-                                Belum ada kursi yang dipilih. Silakan klik kursi yang tersedia pada peta kabin.
-                            </div>
-                        </template>
-
-                        <!-- Alpine Container -->
-                        <div class="flex flex-wrap gap-2" x-show="selectedSeats.length > 0">
-                            <template x-for="seat in selectedSeats" :key="seat.id">
-                                <span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-50 text-brand-800 border border-brand-200 shadow-sm">
-                                    <span>Kursi <strong x-text="seat.number"></strong></span>
-                                    <button type="button" @click="toggleSeat(seat.id, seat.number)" class="ml-2 text-brand-600 hover:text-brand-900 font-black text-sm" aria-label="Hapus kursi">&times;</button>
-                                </span>
-                            </template>
+                        <div class="p-4 rounded-2xl bg-slate-50 border border-dashed border-slate-300 text-center text-xs text-slate-400 font-medium" id="empty-seats-placeholder">
+                            Belum ada kursi yang dipilih. Silakan klik kursi yang tersedia pada peta kabin.
                         </div>
 
-                        <!-- Vanilla JS Fallback Pill Container -->
-                        <div id="vanilla-selected-pills" class="flex flex-wrap gap-2 mt-2"></div>
+                        <!-- Selected Seats Pills Container -->
+                        <div id="selected-pills-container" class="flex flex-wrap gap-2" style="display: none;"></div>
                     </div>
 
                     <!-- Price Calculations -->
@@ -328,41 +299,35 @@
                         </div>
                         <div class="flex justify-between text-slate-600">
                             <span>Jumlah Tiket:</span>
-                            <span class="font-semibold" id="seat-count-display" x-text="selectedSeats.length + ' Kursi'">0 Kursi</span>
+                            <span class="font-semibold" id="seat-count-display">0 Kursi</span>
                         </div>
                         <div class="flex justify-between text-slate-900 font-black text-lg pt-3 border-t border-slate-100">
                             <span>Total Estimasi:</span>
-                            <span class="text-brand-700" id="total-price-display" x-text="'Rp ' + getTotalPrice()">Rp 0</span>
+                            <span class="text-brand-700" id="total-price-display">Rp 0</span>
                         </div>
                     </div>
 
                     <!-- Proceed Form -->
                     <div class="mt-6">
-                        @auth
-                            <form action="{{ route('booking.checkout', $trip) }}" method="GET" id="desktop-booking-form">
-                                <input type="hidden" name="seat_ids" id="desktop-seat-ids-input" :value="getSeatIdsString()" value="">
+                        <form action="{{ route('booking.checkout', $trip) }}" method="GET" id="desktop-booking-form">
+                            <input type="hidden" name="seat_ids" id="desktop-seat-ids-input" value="">
 
-                                <button type="submit"
-                                        id="desktop-submit-checkout-btn"
-                                        :disabled="selectedSeats.length === 0"
-                                        :class="selectedSeats.length === 0 ? 'opacity-50 cursor-not-allowed bg-slate-300' : 'bg-brand-600 hover:bg-brand-700 shadow-lg shadow-brand-600/30'"
-                                        class="w-full py-4 px-4 rounded-2xl text-white font-bold text-sm transition flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed bg-slate-300">
-                                    <span>Lanjutkan Pemesanan</span>
-                                    <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
-                                    </svg>
-                                </button>
-                            </form>
-                        @else
-                            <div class="space-y-3">
-                                <a href="{{ route('login') }}" class="w-full flex items-center justify-center py-3.5 px-4 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md transition">
-                                    Masuk untuk Memesan
-                                </a>
-                                <p class="text-center text-[11px] text-slate-500">
-                                    Belum punya akun? <a href="{{ route('register') }}" class="text-brand-600 font-bold underline">Daftar sekarang</a>
-                                </p>
-                            </div>
-                        @endauth
+                            <button type="submit"
+                                    id="desktop-submit-checkout-btn"
+                                    disabled
+                                    class="w-full py-4 px-4 rounded-2xl text-white font-bold text-sm transition flex items-center justify-center space-x-2 opacity-50 cursor-not-allowed bg-slate-300">
+                                <span>Lanjutkan Pemesanan</span>
+                                <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                                </svg>
+                            </button>
+                        </form>
+
+                        @guest
+                            <p class="text-center text-[11px] text-slate-500 mt-2.5">
+                                Belum masuk akun? Anda akan diarahkan untuk <a href="{{ route('login') }}" class="text-brand-600 font-bold hover:underline">Masuk</a> atau <a href="{{ route('register') }}" class="text-brand-600 font-bold hover:underline">Daftar</a> saat checkout.
+                            </p>
+                        @endguest
                     </div>
 
                     <div class="mt-4 pt-4 border-t border-slate-100 text-center">
@@ -382,183 +347,243 @@
 
     </div>
 
-    <!-- Mobile Sticky Bottom Floating Summary (Phase C Responsive) -->
-    <div x-show="selectedSeats.length > 0"
-         id="mobile-floating-bar"
-         x-transition:enter="transition ease-out duration-200"
-         x-transition:enter-start="translate-y-full opacity-0"
-         x-transition:enter-end="translate-y-0 opacity-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-start="translate-y-0 opacity-100"
-         x-transition:leave-end="translate-y-full opacity-0"
+    <!-- Mobile Sticky Bottom Floating Summary (Responsive) -->
+    <div id="mobile-floating-bar"
          class="fixed bottom-0 inset-x-0 bg-white text-slate-900 border-t border-slate-200 p-4 shadow-2xl z-40 lg:hidden"
          style="display: none;">
         <div class="flex items-center justify-between gap-4">
             <div>
                 <div class="text-xs text-slate-500">
-                    <span id="mobile-seat-count-label" x-text="selectedSeats.length + ' Kursi Dipilih: '">0 Kursi Dipilih: </span>
-                    <strong class="text-brand-600 font-bold" id="mobile-seat-list-label" x-text="selectedSeats.map(s => s.number).join(', ')">-</strong>
+                    <span id="mobile-seat-count-label">0 Kursi Dipilih: </span>
+                    <strong class="text-brand-600 font-bold" id="mobile-seat-list-label">-</strong>
                 </div>
-                <div class="text-lg font-black text-slate-900" id="mobile-total-price-label" x-text="'Rp ' + getTotalPrice()">Rp 0</div>
+                <div class="text-lg font-black text-slate-900" id="mobile-total-price-label">Rp 0</div>
             </div>
 
             <div>
-                @auth
-                    <form action="{{ route('booking.checkout', $trip) }}" method="GET" id="mobile-booking-form">
-                        <input type="hidden" name="seat_ids" id="mobile-seat-ids-input" :value="getSeatIdsString()" value="">
-                        <button type="submit" id="mobile-submit-checkout-btn" class="py-3 px-5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/30 transition">
-                            Lanjutkan
-                        </button>
-                    </form>
-                @else
-                    <a href="{{ route('login') }}" class="py-3 px-5 rounded-xl bg-brand-600 text-white font-bold text-xs shadow-md">
-                        Masuk
-                    </a>
-                @endauth
+                <form action="{{ route('booking.checkout', $trip) }}" method="GET" id="mobile-booking-form">
+                    <input type="hidden" name="seat_ids" id="mobile-seat-ids-input" value="">
+                    <button type="submit"
+                            id="mobile-submit-checkout-btn"
+                            disabled
+                            class="py-3 px-5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/30 transition">
+                        Lanjutkan
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
-{{-- Progressive Enhancement Resilient Seat Picker Script --}}
+{{-- Pure, CSP-Compliant, Robust Seat Picker Script --}}
 <script>
 (function() {
+    'use strict';
+
     var rawPrice = {{ (int) $trip->price }};
     var maxSeats = 5;
-    var selectedList = [];
+    var selectedSeats = []; // Array of { id: number, number: string }
 
-    function updateUI() {
-        var seatIds = selectedList.map(function(s) { return s.id; }).join(',');
-        var desktopInput = document.getElementById('desktop-seat-ids-input');
-        var mobileInput = document.getElementById('mobile-seat-ids-input');
-        if (desktopInput) desktopInput.value = seatIds;
-        if (mobileInput) mobileInput.value = seatIds;
+    function getSeatIdsString() {
+        return selectedSeats.map(function(s) { return s.id; }).join(',');
+    }
 
-        var desktopBtn = document.getElementById('desktop-submit-checkout-btn');
-        if (desktopBtn) {
-            if (selectedList.length > 0) {
-                desktopBtn.disabled = false;
-                desktopBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-300');
-                desktopBtn.classList.add('bg-brand-600', 'hover:bg-brand-700', 'shadow-lg', 'shadow-brand-600/30');
-            } else {
-                desktopBtn.disabled = true;
-                desktopBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-300');
-                desktopBtn.classList.remove('bg-brand-600', 'hover:bg-brand-700', 'shadow-lg', 'shadow-brand-600/30');
-            }
-        }
+    function getTotalPriceFormatted() {
+        return (selectedSeats.length * rawPrice).toLocaleString('id-ID');
+    }
 
-        var totalPrice = (selectedList.length * rawPrice).toLocaleString('id-ID');
-        var totalEl = document.getElementById('total-price-display');
-        if (totalEl) totalEl.textContent = 'Rp ' + totalPrice;
-        var countEl = document.getElementById('seat-count-display');
-        if (countEl) countEl.textContent = selectedList.length + ' Kursi';
-
-        var placeholder = document.getElementById('empty-seats-placeholder');
-        var pillsContainer = document.getElementById('vanilla-selected-pills');
-        if (placeholder && pillsContainer) {
-            if (selectedList.length === 0) {
-                placeholder.style.display = 'block';
-                pillsContainer.innerHTML = '';
-            } else {
-                placeholder.style.display = 'none';
-                pillsContainer.innerHTML = selectedList.map(function(s) {
-                    return '<span class="inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-50 text-brand-800 border border-brand-200 shadow-sm">' +
-                        '<span>Kursi <strong>' + s.number + '</strong></span>' +
-                        '</span>';
-                }).join('');
-            }
-        }
-
-        // Mobile floating bar sync
-        var mobileBar = document.getElementById('mobile-floating-bar');
-        var mobileCount = document.getElementById('mobile-seat-count-label');
-        var mobileList = document.getElementById('mobile-seat-list-label');
-        var mobilePrice = document.getElementById('mobile-total-price-label');
-        if (mobileBar) {
-            if (selectedList.length > 0) {
-                mobileBar.style.display = 'block';
-                if (mobileCount) mobileCount.textContent = selectedList.length + ' Kursi Dipilih: ';
-                if (mobileList) mobileList.textContent = selectedList.map(function(s) { return s.number; }).join(', ');
-                if (mobilePrice) mobilePrice.textContent = 'Rp ' + totalPrice;
-            } else {
-                mobileBar.style.display = 'none';
-            }
-        }
-
-        // Announcer
-        var announcer = document.getElementById('accessibility-announcer');
-        if (announcer && selectedList.length > 0) {
-            announcer.textContent = 'Total ' + selectedList.length + ' kursi terpilih. Total estimasi Rp ' + totalPrice;
+    function announce(message) {
+        var el = document.getElementById('accessibility-announcer');
+        if (el) {
+            el.textContent = message;
         }
     }
 
-    window.syncSeatSelectionFallback = function(alpineList) {
-        selectedList = alpineList.slice();
-        updateUI();
-    };
+    function showMaxSeatsWarning() {
+        var banner = document.getElementById('max-seat-alert-box');
+        if (banner) {
+            banner.style.display = 'block';
+            setTimeout(function() {
+                banner.style.display = 'none';
+            }, 4000);
+        }
+        announce('Peringatan: Maksimal pemesanan adalah ' + maxSeats + ' kursi per transaksi.');
+    }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    function renderUI() {
+        var seatIdsStr = getSeatIdsString();
+        var totalPriceStr = getTotalPriceFormatted();
+
+        // 1. Update Hidden Form Inputs
+        var desktopInput = document.getElementById('desktop-seat-ids-input');
+        if (desktopInput) desktopInput.value = seatIdsStr;
+
+        var mobileInput = document.getElementById('mobile-seat-ids-input');
+        if (mobileInput) mobileInput.value = seatIdsStr;
+
+        // 2. Update Summary Counter & Total
+        var countEl = document.getElementById('seat-count-display');
+        if (countEl) countEl.textContent = selectedSeats.length + ' Kursi';
+
+        var totalEl = document.getElementById('total-price-display');
+        if (totalEl) totalEl.textContent = 'Rp ' + totalPriceStr;
+
+        // 3. Update Selected Pills Container
+        var placeholder = document.getElementById('empty-seats-placeholder');
+        var pillsContainer = document.getElementById('selected-pills-container');
+
+        if (placeholder && pillsContainer) {
+            if (selectedSeats.length === 0) {
+                placeholder.style.display = 'block';
+                pillsContainer.style.display = 'none';
+                pillsContainer.innerHTML = '';
+            } else {
+                placeholder.style.display = 'none';
+                pillsContainer.style.display = 'flex';
+                pillsContainer.innerHTML = '';
+
+                selectedSeats.forEach(function(seat) {
+                    var pill = document.createElement('span');
+                    pill.className = 'inline-flex items-center px-3 py-1.5 rounded-xl text-xs font-bold bg-brand-50 text-brand-800 border border-brand-200 shadow-sm';
+                    pill.innerHTML = '<span>Kursi <strong>' + seat.number + '</strong></span>';
+
+                    var removeBtn = document.createElement('button');
+                    removeBtn.type = 'button';
+                    removeBtn.className = 'ml-2 text-brand-600 hover:text-brand-900 font-black text-sm focus:outline-none';
+                    removeBtn.setAttribute('aria-label', 'Batalkan pilihan kursi ' + seat.number);
+                    removeBtn.innerHTML = '&times;';
+                    removeBtn.addEventListener('click', function(e) {
+                        e.stopPropagation();
+                        toggleSeat(seat.id, seat.number);
+                    });
+
+                    pill.appendChild(removeBtn);
+                    pillsContainer.appendChild(pill);
+                });
+            }
+        }
+
+        // 4. Update Desktop Checkout Submit Button
+        var desktopBtn = document.getElementById('desktop-submit-checkout-btn');
+        if (desktopBtn) {
+            if (selectedSeats.length > 0) {
+                desktopBtn.disabled = false;
+                desktopBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-slate-300');
+                desktopBtn.classList.add('bg-brand-600', 'hover:bg-brand-700', 'shadow-lg', 'shadow-brand-600/30', 'cursor-pointer');
+            } else {
+                desktopBtn.disabled = true;
+                desktopBtn.classList.add('opacity-50', 'cursor-not-allowed', 'bg-slate-300');
+                desktopBtn.classList.remove('bg-brand-600', 'hover:bg-brand-700', 'shadow-lg', 'shadow-brand-600/30', 'cursor-pointer');
+            }
+        }
+
+        // 5. Update Mobile Floating Bar
+        var mobileBar = document.getElementById('mobile-floating-bar');
+        var mobileBtn = document.getElementById('mobile-submit-checkout-btn');
+        var mobileCount = document.getElementById('mobile-seat-count-label');
+        var mobileList = document.getElementById('mobile-seat-list-label');
+        var mobilePrice = document.getElementById('mobile-total-price-label');
+
+        if (mobileBar) {
+            if (selectedSeats.length > 0) {
+                mobileBar.style.display = 'block';
+                if (mobileBtn) mobileBtn.disabled = false;
+                if (mobileCount) mobileCount.textContent = selectedSeats.length + ' Kursi Dipilih: ';
+                if (mobileList) mobileList.textContent = selectedSeats.map(function(s) { return s.number; }).join(', ');
+                if (mobilePrice) mobilePrice.textContent = 'Rp ' + totalPriceStr;
+            } else {
+                mobileBar.style.display = 'none';
+                if (mobileBtn) mobileBtn.disabled = true;
+            }
+        }
+    }
+
+    function toggleSeat(seatId, seatNumber) {
+        var numId = parseInt(seatId, 10);
+        var existingIdx = selectedSeats.findIndex(function(s) { return s.id === numId; });
+        var btn = document.getElementById('seat-btn-' + numId);
+
+        if (existingIdx > -1) {
+            // Deselect seat
+            selectedSeats.splice(existingIdx, 1);
+            if (btn) {
+                btn.classList.remove('bg-brand-600', 'text-white', 'shadow-lg', 'shadow-brand-600/30', 'border-brand-600', 'scale-105');
+                btn.classList.add('bg-white', 'text-slate-800', 'border-2', 'border-slate-300');
+                btn.setAttribute('aria-pressed', 'false');
+                btn.setAttribute('aria-label', 'Kursi ' + seatNumber + ', tersedia, tarif Rp ' + rawPrice.toLocaleString('id-ID'));
+
+                var numEl = btn.querySelector('.seat-num-text');
+                if (numEl) numEl.textContent = seatNumber;
+
+                var subEl = btn.querySelector('.seat-status-text');
+                if (subEl) subEl.textContent = '';
+            }
+            announce('Pilihan kursi ' + seatNumber + ' dibatalkan. Tersisa ' + selectedSeats.length + ' kursi terpilih.');
+        } else {
+            // Select seat
+            if (selectedSeats.length >= maxSeats) {
+                showMaxSeatsWarning();
+                return;
+            }
+
+            selectedSeats.push({ id: numId, number: seatNumber });
+            if (btn) {
+                btn.classList.add('bg-brand-600', 'text-white', 'shadow-lg', 'shadow-brand-600/30', 'border-brand-600', 'scale-105');
+                btn.classList.remove('bg-white', 'text-slate-800', 'border-2', 'border-slate-300');
+                btn.setAttribute('aria-pressed', 'true');
+                btn.setAttribute('aria-label', 'Kursi ' + seatNumber + ', dipilih, tarif Rp ' + rawPrice.toLocaleString('id-ID'));
+
+                var numEl2 = btn.querySelector('.seat-num-text');
+                if (numEl2) numEl2.textContent = '✓';
+
+                var subEl2 = btn.querySelector('.seat-status-text');
+                if (subEl2) subEl2.textContent = 'Pilih';
+            }
+            announce('Kursi ' + seatNumber + ' berhasil dipilih. Total ' + selectedSeats.length + ' kursi terpilih.');
+        }
+
+        renderUI();
+    }
+
+    function initSeatPicker() {
         var buttons = document.querySelectorAll('.seat-picker-btn');
         buttons.forEach(function(btn) {
             btn.addEventListener('click', function(e) {
-                // If Alpine is loaded, Alpine handles click via @click.
-                // We verify 30ms later to ensure fallback sync if Alpine did not evaluate
-                setTimeout(function() {
-                    // Check if Alpine updated or if we need vanilla fallback
-                    var alpineRoot = document.getElementById('seat-picker-root');
-                    if (window.Alpine && alpineRoot && alpineRoot._x_dataStack && alpineRoot._x_dataStack[0]) {
-                        var alp = alpineRoot._x_dataStack[0];
-                        selectedList = alp.selectedSeats.slice();
-                    } else {
-                        var id = parseInt(btn.getAttribute('data-seat-id'), 10);
-                        var num = btn.getAttribute('data-seat-number');
-                        var idx = selectedList.findIndex(function(s) { return s.id === id; });
-                        if (idx > -1) {
-                            selectedList.splice(idx, 1);
-                            btn.classList.remove('bg-brand-600', 'text-white', 'shadow-lg', 'shadow-brand-600/30', 'border-brand-600', 'scale-105');
-                            btn.classList.add('bg-white', 'text-slate-800', 'border-2', 'border-slate-300');
-                            btn.setAttribute('aria-pressed', 'false');
-                            var numEl = btn.querySelector('.seat-num-text');
-                            if (numEl) numEl.textContent = num;
-                            var subEl = btn.querySelector('.seat-status-text');
-                            if (subEl) subEl.textContent = '';
-                        } else {
-                            if (selectedList.length >= maxSeats) {
-                                var alpineRootEl = document.getElementById('seat-picker-root');
-                                if (window.Alpine && alpineRootEl && alpineRootEl._x_dataStack && alpineRootEl._x_dataStack[0]) {
-                                    alpineRootEl._x_dataStack[0].maxSeatWarning = true;
-                                    setTimeout(function() {
-                                        if (alpineRootEl._x_dataStack && alpineRootEl._x_dataStack[0]) {
-                                            alpineRootEl._x_dataStack[0].maxSeatWarning = false;
-                                        }
-                                    }, 4000);
-                                }
-                                var alertBanner = document.getElementById('max-seat-alert-box');
-                                if (alertBanner) {
-                                    alertBanner.style.display = 'block';
-                                    setTimeout(function() { alertBanner.style.display = 'none'; }, 4000);
-                                }
-                                var announcerEl = document.getElementById('accessibility-announcer');
-                                if (announcerEl) {
-                                    announcerEl.textContent = 'Peringatan: Maksimal pemesanan adalah ' + maxSeats + ' kursi per transaksi.';
-                                }
-                                return;
-                            }
-                            selectedList.push({ id: id, number: num });
-                            btn.classList.add('bg-brand-600', 'text-white', 'shadow-lg', 'shadow-brand-600/30', 'border-brand-600', 'scale-105');
-                            btn.classList.remove('bg-white', 'text-slate-800', 'border-2', 'border-slate-300');
-                            btn.setAttribute('aria-pressed', 'true');
-                            var numEl2 = btn.querySelector('.seat-num-text');
-                            if (numEl2) numEl2.textContent = '✓';
-                            var subEl2 = btn.querySelector('.seat-status-text');
-                            if (subEl2) subEl2.textContent = 'Pilih';
-                        }
-                    }
-                    updateUI();
-                }, 40);
+                e.preventDefault();
+                var seatId = btn.getAttribute('data-seat-id');
+                var seatNumber = btn.getAttribute('data-seat-number');
+                toggleSeat(seatId, seatNumber);
             });
         });
-    });
+
+        var closeAlertBtn = document.getElementById('close-max-seat-alert');
+        if (closeAlertBtn) {
+            closeAlertBtn.addEventListener('click', function() {
+                var alertBox = document.getElementById('max-seat-alert-box');
+                if (alertBox) alertBox.style.display = 'none';
+            });
+        }
+
+        // Initialize state
+        renderUI();
+    }
+
+    // Expose safe API for testing / external access
+    window.CANSeatPicker = {
+        toggle: toggleSeat,
+        getSelected: function() { return selectedSeats.slice(); },
+        getSeatIds: getSeatIdsString,
+        clear: function() {
+            var copy = selectedSeats.slice();
+            copy.forEach(function(s) { toggleSeat(s.id, s.number); });
+        }
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSeatPicker);
+    } else {
+        initSeatPicker();
+    }
 })();
 </script>
 @endsection

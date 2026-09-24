@@ -11,11 +11,14 @@ use App\Models\Route;
 use App\Models\Trip;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Foundation\Testing\DatabaseTransactions;
 use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class BusBookingSystemTest extends TestCase
 {
+    use DatabaseTransactions;
+
     /**
      * User registration test.
      */

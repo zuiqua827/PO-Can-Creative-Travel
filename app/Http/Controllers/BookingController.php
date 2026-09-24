@@ -44,6 +44,11 @@ class BookingController extends Controller
                 ->with('error', 'Silakan pilih minimal 1 kursi sebelum melanjutkan pemesanan.');
         }
 
+        if (count($seatIds) > 5) {
+            return redirect()->route('trips.show', $trip)
+                ->with('error', 'Maksimal pemesanan adalah 5 kursi per transaksi.');
+        }
+
         // 2. Verify seats belong to this bus and are operational
         $seats = BusSeat::where('bus_id', $trip->bus_id)
             ->whereIn('id', $seatIds)
