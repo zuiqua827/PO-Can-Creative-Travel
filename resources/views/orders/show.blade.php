@@ -22,8 +22,8 @@
 @endpush
 
 @section('content')
-<div class="bg-slate-100 py-10 sm:py-12">
-    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="bg-slate-100 py-6 sm:py-12">
+    <div class="max-w-4xl mx-auto px-3.5 sm:px-6 lg:px-8">
         
         <!-- Top Navigation / Action Bar -->
         <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-6 gap-4 no-print">
@@ -113,11 +113,11 @@
         @endif
 
         <!-- Order Timeline Progress (Task 6) -->
-        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm mb-6 no-print">
+        <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-slate-200 shadow-sm mb-6 no-print">
             <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Status & Alur Pesanan</h3>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-xs">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-center text-xs">
                 <!-- Step 1: Created -->
-                <div class="p-3 rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200">
+                <div class="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-800 border border-emerald-200">
                     <span class="block font-bold">1. Dibuat</span>
                     <span class="text-[10px] text-emerald-600 font-medium">{{ $order->created_at->format('d M, H:i') }}</span>
                 </div>
@@ -174,10 +174,10 @@
         </div>
 
         <!-- The Boarding Pass / E-Ticket Card -->
-        <div class="ticket-card bg-white rounded-3xl overflow-hidden shadow-2xl border border-slate-200">
+        <div class="ticket-card bg-white rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl border border-slate-200">
             
             <!-- Ticket Top Header -->
-            <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-navy-950 text-white p-6 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-navy-950 text-white p-4 sm:p-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div class="flex items-center space-x-3">
                     <x-logo size="md" variant="light" />
                 </div>
@@ -203,20 +203,20 @@
             </div>
 
             <!-- Route Banner -->
-            <div class="p-6 sm:p-8 bg-slate-50/80 border-b border-dashed border-slate-300">
+            <div class="p-4 sm:p-8 bg-slate-50/80 border-b border-dashed border-slate-300">
                 <div class="flex flex-col sm:flex-row items-center justify-between gap-6">
                     <div class="text-center sm:text-left flex-1">
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kota Keberangkatan</span>
                         <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $order->trip->route->origin }}</div>
-                        <div class="text-xs font-medium text-slate-600 mt-1">📍 Titik Naik: {{ $order->trip->boarding_point ?: $order->trip->route->origin }}</div>
+                        <div class="text-xs font-medium text-slate-600 mt-1 flex items-center"><svg class="w-3.5 h-3.5 text-brand-600 mr-1 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg> Titik Naik: {{ $order->trip->boarding_point ?: $order->trip->route->origin }}</div>
                         <div class="text-xs font-bold text-brand-700 mt-1">{{ $order->trip->departure_at->translatedFormat('l, d F Y - H:i') }} WIB</div>
                     </div>
 
-                    <div class="flex flex-col items-center px-4">
+                    <div class="flex flex-col items-center px-2 sm:px-4">
                         <span class="text-[10px] font-bold text-slate-500 bg-white border border-slate-200 px-3 py-1 rounded-full mb-1">
                             {{ $order->trip->route->estimated_duration ?: 'Jalur Tol Trans Jawa' }}
                         </span>
-                        <div class="w-24 sm:w-32 h-0.5 bg-slate-300 relative flex items-center justify-center">
+                        <div class="w-16 sm:w-32 h-0.5 bg-slate-300 relative flex items-center justify-center">
                             <div class="w-2.5 h-2.5 rounded-full bg-brand-600 absolute -left-1"></div>
                             <div class="w-2.5 h-2.5 rounded-full bg-emerald-600 absolute -right-1"></div>
                         </div>
@@ -226,14 +226,14 @@
                     <div class="text-center sm:text-right flex-1">
                         <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Kota Kedatangan</span>
                         <div class="text-2xl font-black text-slate-900 mt-0.5">{{ $order->trip->route->destination }}</div>
-                        <div class="text-xs font-medium text-slate-600 mt-1">📍 Titik Turun: {{ $order->trip->drop_off_point ?: $order->trip->route->destination }}</div>
+                        <div class="text-xs font-medium text-slate-600 mt-1 flex items-center"><svg class="w-3.5 h-3.5 text-brand-600 mr-1 shrink-0" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/></svg> Titik Turun: {{ $order->trip->drop_off_point ?: $order->trip->route->destination }}</div>
                         <div class="text-xs font-bold text-brand-700 mt-1">{{ $order->trip->arrival_at->translatedFormat('l, d F Y - H:i') }} WIB</div>
                     </div>
                 </div>
             </div>
 
             <!-- Passenger Manifest & Seat Numbers -->
-            <div class="p-6 sm:p-8">
+            <div class="p-4 sm:p-8">
                 <h2 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Daftar Penumpang & Alokasi Kursi</h2>
 
                 <div class="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden mb-6">
@@ -271,7 +271,7 @@
                 </div>
 
                 <!-- Info Grid: Armada & Statuses -->
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 p-5 rounded-2xl bg-slate-50 text-xs mb-6">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-4 p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-50 text-xs mb-6">
                     <div>
                         <span class="text-slate-400 block font-medium">Armada Bus</span>
                         <strong class="text-slate-800 font-bold">{{ $order->trip->bus->name }}</strong>

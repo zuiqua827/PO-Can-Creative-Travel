@@ -71,9 +71,9 @@
         </div>
 
         <!-- Sort Select -->
-        <div class="flex items-center space-x-2 text-xs">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-1.5 sm:space-y-0 sm:space-x-2 text-xs w-full sm:w-auto">
             <span class="text-slate-500 font-bold uppercase tracking-wider">Urutkan:</span>
-            <form action="{{ route('trips.index') }}" method="GET" id="sortForm">
+            <form action="{{ route('trips.index') }}" method="GET" id="sortForm" class="w-full sm:w-auto">
                 @if($origin)<input type="hidden" name="origin" value="{{ $origin }}">@endif
                 @if($destination)<input type="hidden" name="destination" value="{{ $destination }}">@endif
                 @if($date)<input type="hidden" name="date" value="{{ $date }}">@endif
@@ -82,7 +82,7 @@
                 @if($maxPrice)<input type="hidden" name="max_price" value="{{ $maxPrice }}">@endif
 
                 <select name="sort" onchange="document.getElementById('sortForm').submit()" 
-                    class="py-2 px-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm" aria-label="Urutkan Jadwal">
+                    class="w-full sm:w-auto py-2.5 px-3 rounded-xl border border-slate-300 bg-white text-slate-800 font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-sm min-h-[44px]" aria-label="Urutkan Jadwal">
                     <option value="departure_asc" {{ $sortBy == 'departure_asc' ? 'selected' : '' }}>Keberangkatan Paling Awal</option>
                     <option value="departure_desc" {{ $sortBy == 'departure_desc' ? 'selected' : '' }}>Keberangkatan Paling Akhir</option>
                     <option value="price_asc" {{ $sortBy == 'price_asc' ? 'selected' : '' }}>Harga Termurah</option>
@@ -95,7 +95,7 @@
     <!-- Trips Schedule List -->
     <div class="space-y-5">
         @forelse($trips as $trip)
-            <div class="bg-white rounded-3xl p-6 sm:p-7 border border-slate-200/90 shadow-sm hover:shadow-lg transition-all duration-200">
+            <div class="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-7 border border-slate-200/90 shadow-sm hover:shadow-lg transition-all duration-200">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                     
                     <!-- Left: Bus Details -->
@@ -125,17 +125,17 @@
                     <div class="lg:col-span-5 border-y lg:border-y-0 lg:border-x border-slate-100 py-4 lg:py-0 lg:px-6">
                         <div class="flex items-center justify-between">
                             <div>
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Berangkat</span>
-                                <div class="text-2xl font-black text-slate-900">{{ $trip->departure_at->format('H:i') }} <span class="text-xs font-semibold text-slate-500">WIB</span></div>
-                                <div class="text-xs font-bold text-slate-700 truncate max-w-[130px]" title="{{ $trip->route->origin }}">{{ $trip->route->origin }}</div>
-                                <div class="text-[11px] text-slate-400">{{ $trip->departure_at->translatedFormat('d M Y') }}</div>
+                                <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Berangkat</span>
+                                <div class="text-xl sm:text-2xl font-black text-slate-900">{{ $trip->departure_at->format('H:i') }} <span class="text-xs font-semibold text-slate-500">WIB</span></div>
+                                <div class="text-xs font-bold text-slate-700 truncate max-w-[90px] xs:max-w-[110px] sm:max-w-[130px]" title="{{ $trip->route->origin }}">{{ $trip->route->origin }}</div>
+                                <div class="text-[10px] sm:text-[11px] text-slate-400">{{ $trip->departure_at->translatedFormat('d M Y') }}</div>
                             </div>
 
-                            <div class="flex flex-col items-center px-2">
+                            <div class="flex flex-col items-center px-1 sm:px-2">
                                 <span class="text-[10px] font-bold text-brand-600 bg-brand-50 px-2.5 py-0.5 rounded-full mb-1">
                                     {{ $trip->route->estimated_duration ?: 'Langsung' }}
                                 </span>
-                                <div class="w-16 sm:w-24 h-0.5 bg-slate-300 relative flex items-center justify-center">
+                                <div class="w-12 sm:w-24 h-0.5 bg-slate-300 relative flex items-center justify-center">
                                     <div class="w-2 h-2 rounded-full bg-brand-600 absolute -left-1"></div>
                                     <div class="w-2 h-2 rounded-full bg-emerald-600 absolute -right-1"></div>
                                 </div>
@@ -143,10 +143,10 @@
                             </div>
 
                             <div class="text-right">
-                                <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Tiba</span>
-                                <div class="text-2xl font-black text-slate-900">{{ $trip->arrival_at->format('H:i') }} <span class="text-xs font-semibold text-slate-500">WIB</span></div>
-                                <div class="text-xs font-bold text-slate-700 truncate max-w-[130px]" title="{{ $trip->route->destination }}">{{ $trip->route->destination }}</div>
-                                <div class="text-[11px] text-slate-400">{{ $trip->arrival_at->translatedFormat('d M Y') }}</div>
+                                <span class="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tiba</span>
+                                <div class="text-xl sm:text-2xl font-black text-slate-900">{{ $trip->arrival_at->format('H:i') }} <span class="text-xs font-semibold text-slate-500">WIB</span></div>
+                                <div class="text-xs font-bold text-slate-700 truncate max-w-[90px] xs:max-w-[110px] sm:max-w-[130px]" title="{{ $trip->route->destination }}">{{ $trip->route->destination }}</div>
+                                <div class="text-[10px] sm:text-[11px] text-slate-400">{{ $trip->arrival_at->translatedFormat('d M Y') }}</div>
                             </div>
                         </div>
 
@@ -156,8 +156,8 @@
                     </div>
 
                     <!-- Right: Price & CTA -->
-                    <div class="lg:col-span-3 text-right flex flex-col justify-between items-end space-y-4">
-                        <div>
+                    <div class="lg:col-span-3 text-left sm:text-right flex flex-col justify-between items-start sm:items-end space-y-4 w-full">
+                        <div class="w-full text-left sm:text-right">
                             <span class="text-[11px] text-slate-400 block font-medium">Harga per Kursi</span>
                             <span class="text-2xl font-black text-brand-700">{{ $trip->formatted_price }}</span>
                             <div class="mt-1">
@@ -176,14 +176,14 @@
 
                         <div class="w-full">
                             @if($trip->available_seats_count > 0)
-                                <a href="{{ route('trips.show', $trip) }}" class="w-full flex items-center justify-center py-3 px-5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md shadow-brand-600/25 transition">
+                                <a href="{{ route('trips.show', $trip) }}" class="w-full flex items-center justify-center py-3.5 px-5 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm shadow-md shadow-brand-600/25 transition min-h-[48px]">
                                     <span>Pilih Jadwal</span>
                                     <svg class="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
                                     </svg>
                                 </a>
                             @else
-                                <button disabled class="w-full py-3 px-5 rounded-2xl bg-slate-200 text-slate-400 font-bold text-sm cursor-not-allowed">
+                                <button disabled class="w-full py-3.5 px-5 rounded-2xl bg-slate-200 text-slate-400 font-bold text-sm cursor-not-allowed min-h-[48px]">
                                     Kursi Penuh
                                 </button>
                             @endif
@@ -199,9 +199,19 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
                 </div>
-                <h3 class="text-lg font-bold text-slate-800">Belum ada jadwal yang sesuai.</h3>
-                <p class="text-sm text-slate-500 max-w-md mx-auto mt-1 mb-6">
-                    Silakan ubah tanggal atau pilih rute kota asal dan tujuan lainnya untuk melihat jadwal bus CAN Travel.
+                <h3 class="text-lg font-bold text-slate-800">Jadwal perjalanan tidak ditemukan</h3>
+                <p class="text-sm text-slate-500 max-w-md mx-auto mt-2 mb-6">
+                    Tidak ditemukan jadwal perjalanan
+                    @if($origin || $destination || $date)
+                        <br>
+                        <strong>
+                            {{ $origin ?: 'Semua Kota' }} &rarr; {{ $destination ?: 'Semua Kota' }}
+                            @if($date)
+                                <br>{{ \Carbon\Carbon::parse($date)->translatedFormat('d F Y') }}
+                            @endif
+                        </strong>
+                    @endif
+                    <br>Silakan ubah tanggal atau pilih rute kota lainnya.
                 </p>
                 <a href="{{ route('trips.index') }}" class="inline-flex items-center px-5 py-2.5 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition">
                     Reset Filter

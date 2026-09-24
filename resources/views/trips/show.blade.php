@@ -4,7 +4,7 @@
 @section('meta_description', 'Pilih nomor kursi favorit pada denah bus interaktif ' . $trip->bus->name . ' rute ' . $trip->route->origin . ' ke ' . $trip->route->destination . ' bersama CAN Travel.')
 
 @section('content')
-<div class="bg-navy-900 text-white py-8 border-b border-navy-800" id="seat-picker-root">
+<div class="bg-navy-900 text-white py-8 pb-28 lg:pb-8 border-b border-navy-800" id="seat-picker-root">
 
     <!-- WCAG 2.1 AA Dynamic Screen Reader Announcer -->
     <div id="accessibility-announcer" class="sr-only" aria-live="polite" aria-atomic="true" data-announcement="accessibilityAnnouncement" x-text="accessibilityAnnouncement"></div>
@@ -26,7 +26,7 @@
 
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <!-- Back Navigation & Breadcrumb -->
-        <div class="flex items-center space-x-2 text-xs text-slate-400 mb-4">
+        <div class="flex flex-wrap items-center gap-1.5 text-xs text-slate-400 mb-4">
             <a href="{{ route('trips.index') }}" class="hover:text-white flex items-center transition">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -38,7 +38,7 @@
         </div>
 
         <!-- Trip Summary Header -->
-        <div class="bg-white/10 backdrop-blur-md rounded-3xl p-6 sm:p-8 border border-white/15">
+        <div class="bg-white/10 backdrop-blur-md rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-white/15">
             <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6">
                 <div>
                     <div class="flex items-center space-x-3 mb-2">
@@ -47,7 +47,7 @@
                         </span>
                         <span class="text-xs text-slate-300 font-mono">{{ $trip->trip_code }}</span>
                     </div>
-                    <h1 class="text-2xl sm:text-3xl font-black text-white">
+                    <h1 class="text-xl sm:text-3xl font-black text-white">
                         {{ $trip->route->origin }} → {{ $trip->route->destination }}
                     </h1>
                     <p class="text-xs sm:text-sm text-slate-300 mt-1">
@@ -73,10 +73,10 @@
         <div class="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-8 text-slate-900">
 
             <!-- Left: Interactive Visual Seat Layout (Bus Cabin) -->
-            <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm">
+            <div class="lg:col-span-8 bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-8 lg:p-10 border border-slate-200 shadow-sm">
 
                 <!-- Seat Legend (Phase E: 4 Explicit States) -->
-                <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-6 pb-6 sm:pb-8 border-b border-slate-100 text-[11px] sm:text-xs font-semibold">
+                <div class="flex flex-wrap items-center justify-center gap-2 sm:gap-6 pb-5 sm:pb-8 border-b border-slate-100 text-[11px] sm:text-xs font-semibold">
                     <div class="flex items-center space-x-1.5 sm:space-x-2">
                         <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 border-slate-300 bg-white flex items-center justify-center text-[10px] sm:text-xs font-bold text-slate-700 shadow-sm">
                             1A
@@ -103,151 +103,153 @@
                     </div>
                 </div>
 
-                <!-- Bus Cabin Shell -->
-                <div class="max-w-md mx-auto mt-8 bg-slate-50 rounded-[40px] p-6 border-4 border-slate-200 relative shadow-inner">
+                <!-- Bus Cabin Shell with Controlled Scroll Wrapper -->
+                <div class="overflow-x-auto pb-2 -mx-1 sm:mx-0">
+                    <div class="max-w-md min-w-[270px] mx-auto mt-6 sm:mt-8 bg-slate-50 rounded-3xl sm:rounded-[40px] p-3.5 sm:p-6 border-2 sm:border-4 border-slate-200 relative shadow-inner">
 
-                    <!-- Front Cabin (Driver & Door) -->
-                    <div class="flex justify-between items-center pb-6 border-b-2 border-dashed border-slate-300 mb-6 px-2">
-                        <div class="flex items-center space-x-2 bg-slate-200 px-3.5 py-2 rounded-2xl text-xs font-bold text-slate-600">
-                            <svg class="w-4 h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                <circle cx="12" cy="12" r="10" stroke-width="2"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 000 20M2 12a10 10 0 0020 0"/>
-                            </svg>
-                            <span>Pengemudi</span>
-                        </div>
-
-                        <span class="text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Bagian Depan</span>
-
-                        <div class="px-3 py-1.5 rounded-xl border border-slate-300 bg-white text-[11px] font-bold text-slate-500">
-                            Pintu Masuk
-                        </div>
-                    </div>
-
-                    <!-- Seats Rows Layout (2-2 configuration) -->
-                    <div class="space-y-4" role="group" aria-label="Denah Kursi Bus">
-                        @foreach($seatsByRow as $rowNumber => $seats)
-                            <div class="flex items-center justify-between">
-
-                                <!-- Left Seats (Columns A & B) -->
-                                <div class="flex space-x-2.5">
-                                    @foreach($seats->whereIn('column', ['A', 'B']) as $seat)
-                                        @php
-                                            $isConfirmed = in_array($seat->id, $confirmedSeatIds ?? []);
-                                            $isHeld = in_array($seat->id, $heldSeatIds ?? []);
-                                            $isBooked = $isConfirmed || in_array($seat->id, $bookedSeatIds ?? []) || $seat->status !== 'available';
-                                        @endphp
-
-                                        @if($isConfirmed || ($isBooked && !$isHeld))
-                                            <!-- Booked / Confirmed Disabled Seat -->
-                                            <button type="button" disabled
-                                                    class="w-12 h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
-                                                    title="Kursi {{ $seat->seat_number }} sudah terisi"
-                                                    aria-label="Kursi {{ $seat->seat_number }}, sudah terisi"
-                                                    aria-disabled="true"
-                                                    data-seat-id="{{ $seat->id }}"
-                                                    data-seat-number="{{ $seat->seat_number }}"
-                                                    data-seat-status="booked">
-                                                <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
-                                                <span class="text-[8px] uppercase font-semibold">Terisi</span>
-                                            </button>
-                                        @elseif($isHeld)
-                                            <!-- Held / Active Reservation Seat -->
-                                            <button type="button" disabled
-                                                    class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
-                                                    title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain"
-                                                    aria-label="Kursi {{ $seat->seat_number }}, sedang ditahan"
-                                                    aria-disabled="true"
-                                                    data-seat-id="{{ $seat->id }}"
-                                                    data-seat-number="{{ $seat->seat_number }}"
-                                                    data-seat-status="held">
-                                                <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
-                                                <span class="text-[8px] uppercase font-semibold">Tertahan</span>
-                                            </button>
-                                        @else
-                                            <!-- Available Interactive Seat -->
-                                            <button type="button"
-                                                    id="seat-btn-{{ $seat->id }}"
-                                                    data-seat-id="{{ $seat->id }}"
-                                                    data-seat-number="{{ $seat->seat_number }}"
-                                                    data-seat-status="available"
-                                                    aria-label="Kursi {{ $seat->seat_number }}, tersedia, tarif {{ $trip->formatted_price }}"
-                                                    aria-pressed="false"
-                                                    class="seat-picker-btn cursor-pointer w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm">
-                                                <span class="seat-num-text text-xs font-bold">{{ $seat->seat_number }}</span>
-                                                <span class="seat-status-text text-[8px] uppercase font-semibold"></span>
-                                            </button>
-                                        @endif
-                                    @endforeach
-                                </div>
-
-                                <!-- Aisle (Lorong Bus) -->
-                                <div class="flex-1 flex justify-center text-slate-400 text-xs font-mono select-none">
-                                    <span class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">R{{ $rowNumber }}</span>
-                                </div>
-
-                                <!-- Right Seats (Columns C & D) -->
-                                <div class="flex space-x-2.5">
-                                    @foreach($seats->whereIn('column', ['C', 'D']) as $seat)
-                                        @php
-                                            $isConfirmed = in_array($seat->id, $confirmedSeatIds ?? []);
-                                            $isHeld = in_array($seat->id, $heldSeatIds ?? []);
-                                            $isBooked = $isConfirmed || in_array($seat->id, $bookedSeatIds ?? []) || $seat->status !== 'available';
-                                        @endphp
-
-                                        @if($isConfirmed || ($isBooked && !$isHeld))
-                                            <!-- Booked / Confirmed Disabled Seat -->
-                                            <button type="button" disabled
-                                                    class="w-12 h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
-                                                    title="Kursi {{ $seat->seat_number }} sudah terisi"
-                                                    aria-label="Kursi {{ $seat->seat_number }}, sudah terisi"
-                                                    aria-disabled="true"
-                                                    data-seat-id="{{ $seat->id }}"
-                                                    data-seat-number="{{ $seat->seat_number }}"
-                                                    data-seat-status="booked">
-                                                <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
-                                                <span class="text-[8px] uppercase font-semibold">Terisi</span>
-                                            </button>
-                                        @elseif($isHeld)
-                                            <!-- Held / Active Reservation Seat -->
-                                            <button type="button" disabled
-                                                    class="w-12 h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
-                                                    title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain"
-                                                    aria-label="Kursi {{ $seat->seat_number }}, sedang ditahan"
-                                                    aria-disabled="true"
-                                                    data-seat-id="{{ $seat->id }}"
-                                                    data-seat-number="{{ $seat->seat_number }}"
-                                                    data-seat-status="held">
-                                                <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
-                                                <span class="text-[8px] uppercase font-semibold">Tertahan</span>
-                                            </button>
-                                        @else
-                                            <!-- Available Interactive Seat -->
-                                            <button type="button"
-                                                    id="seat-btn-{{ $seat->id }}"
-                                                    data-seat-id="{{ $seat->id }}"
-                                                    data-seat-number="{{ $seat->seat_number }}"
-                                                    data-seat-status="available"
-                                                    aria-label="Kursi {{ $seat->seat_number }}, tersedia, tarif {{ $trip->formatted_price }}"
-                                                    aria-pressed="false"
-                                                    class="seat-picker-btn cursor-pointer w-12 h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm">
-                                                <span class="seat-num-text text-xs font-bold">{{ $seat->seat_number }}</span>
-                                                <span class="seat-status-text text-[8px] uppercase font-semibold"></span>
-                                            </button>
-                                        @endif
-                                    @endforeach
-                                </div>
-
+                        <!-- Front Cabin (Driver & Door) -->
+                        <div class="flex justify-between items-center pb-5 border-b-2 border-dashed border-slate-300 mb-6 px-1 sm:px-2">
+                            <div class="flex items-center space-x-1.5 sm:space-x-2 bg-slate-200 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-2xl text-[11px] sm:text-xs font-bold text-slate-600">
+                                <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 000 20M2 12a10 10 0 0020 0"/>
+                                </svg>
+                                <span>Pengemudi</span>
                             </div>
-                        @endforeach
-                    </div>
 
-                    <!-- Rear Cabin (Toilet & Exit) -->
-                    <div class="mt-8 pt-4 border-t-2 border-dashed border-slate-300 flex justify-between items-center text-xs text-slate-400 px-2">
-                        <span class="px-3 py-1 bg-slate-200 rounded-lg font-semibold text-slate-600">Toilet Kabin</span>
-                        <span class="font-extrabold uppercase tracking-widest text-[10px]">Bagian Belakang</span>
-                        <span class="px-3 py-1 bg-slate-200 rounded-lg font-semibold text-slate-600">Pintu Darurat</span>
-                    </div>
+                            <span class="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-widest text-slate-400">Bagian Depan</span>
 
+                            <div class="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-slate-300 bg-white text-[10px] sm:text-[11px] font-bold text-slate-500">
+                                Pintu Masuk
+                            </div>
+                        </div>
+
+                        <!-- Seats Rows Layout (2-2 configuration) -->
+                        <div class="space-y-3.5 sm:space-y-4" role="group" aria-label="Denah Kursi Bus">
+                            @foreach($seatsByRow as $rowNumber => $seats)
+                                <div class="flex items-center justify-between">
+
+                                    <!-- Left Seats (Columns A & B) -->
+                                    <div class="flex space-x-1.5 sm:space-x-2.5">
+                                        @foreach($seats->whereIn('column', ['A', 'B']) as $seat)
+                                            @php
+                                                $isConfirmed = in_array($seat->id, $confirmedSeatIds ?? []);
+                                                $isHeld = in_array($seat->id, $heldSeatIds ?? []);
+                                                $isBooked = $isConfirmed || in_array($seat->id, $bookedSeatIds ?? []) || $seat->status !== 'available';
+                                            @endphp
+
+                                            @if($isConfirmed || ($isBooked && !$isHeld))
+                                                <!-- Booked / Confirmed Disabled Seat -->
+                                                <button type="button" disabled
+                                                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
+                                                        title="Kursi {{ $seat->seat_number }} sudah terisi"
+                                                        aria-label="Kursi {{ $seat->seat_number }}, sudah terisi"
+                                                        aria-disabled="true"
+                                                        data-seat-id="{{ $seat->id }}"
+                                                        data-seat-number="{{ $seat->seat_number }}"
+                                                        data-seat-status="booked">
+                                                    <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                    <span class="text-[8px] uppercase font-semibold">Terisi</span>
+                                                </button>
+                                            @elseif($isHeld)
+                                                <!-- Held / Active Reservation Seat -->
+                                                <button type="button" disabled
+                                                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
+                                                        title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain"
+                                                        aria-label="Kursi {{ $seat->seat_number }}, sedang ditahan"
+                                                        aria-disabled="true"
+                                                        data-seat-id="{{ $seat->id }}"
+                                                        data-seat-number="{{ $seat->seat_number }}"
+                                                        data-seat-status="held">
+                                                    <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                    <span class="text-[8px] uppercase font-semibold">Tertahan</span>
+                                                </button>
+                                            @else
+                                                <!-- Available Interactive Seat -->
+                                                <button type="button"
+                                                        id="seat-btn-{{ $seat->id }}"
+                                                        data-seat-id="{{ $seat->id }}"
+                                                        data-seat-number="{{ $seat->seat_number }}"
+                                                        data-seat-status="available"
+                                                        aria-label="Kursi {{ $seat->seat_number }}, tersedia, tarif {{ $trip->formatted_price }}"
+                                                        aria-pressed="false"
+                                                        class="seat-picker-btn cursor-pointer w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm">
+                                                    <span class="seat-num-text text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                    <span class="seat-status-text text-[8px] uppercase font-semibold"></span>
+                                                </button>
+                                            @endif
+                                        @endforeach
+                                    </div>
+
+                                    <!-- Aisle (Lorong Bus) -->
+                                    <div class="flex-1 flex justify-center text-slate-400 text-xs font-mono select-none px-1">
+                                        <span class="text-[9px] sm:text-[10px] text-slate-400 uppercase font-bold tracking-wider">R{{ $rowNumber }}</span>
+                                    </div>
+
+                                    <!-- Right Seats (Columns C & D) -->
+                                    <div class="flex space-x-1.5 sm:space-x-2.5">
+                                        @foreach($seats->whereIn('column', ['C', 'D']) as $seat)
+                                            @php
+                                                $isConfirmed = in_array($seat->id, $confirmedSeatIds ?? []);
+                                                $isHeld = in_array($seat->id, $heldSeatIds ?? []);
+                                                $isBooked = $isConfirmed || in_array($seat->id, $bookedSeatIds ?? []) || $seat->status !== 'available';
+                                            @endphp
+
+                                            @if($isConfirmed || ($isBooked && !$isHeld))
+                                                <!-- Booked / Confirmed Disabled Seat -->
+                                                <button type="button" disabled
+                                                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-200 border border-slate-300 flex flex-col items-center justify-center text-slate-400 cursor-not-allowed select-none"
+                                                        title="Kursi {{ $seat->seat_number }} sudah terisi"
+                                                        aria-label="Kursi {{ $seat->seat_number }}, sudah terisi"
+                                                        aria-disabled="true"
+                                                        data-seat-id="{{ $seat->id }}"
+                                                        data-seat-number="{{ $seat->seat_number }}"
+                                                        data-seat-status="booked">
+                                                    <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                    <span class="text-[8px] uppercase font-semibold">Terisi</span>
+                                                </button>
+                                            @elseif($isHeld)
+                                                <!-- Held / Active Reservation Seat -->
+                                                <button type="button" disabled
+                                                        class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-50 border border-amber-300 flex flex-col items-center justify-center text-amber-700 cursor-not-allowed select-none"
+                                                        title="Kursi {{ $seat->seat_number }} sedang dalam proses pemesanan pengguna lain"
+                                                        aria-label="Kursi {{ $seat->seat_number }}, sedang ditahan"
+                                                        aria-disabled="true"
+                                                        data-seat-id="{{ $seat->id }}"
+                                                        data-seat-number="{{ $seat->seat_number }}"
+                                                        data-seat-status="held">
+                                                    <span class="text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                    <span class="text-[8px] uppercase font-semibold">Tertahan</span>
+                                                </button>
+                                            @else
+                                                <!-- Available Interactive Seat -->
+                                                <button type="button"
+                                                        id="seat-btn-{{ $seat->id }}"
+                                                        data-seat-id="{{ $seat->id }}"
+                                                        data-seat-number="{{ $seat->seat_number }}"
+                                                        data-seat-status="available"
+                                                        aria-label="Kursi {{ $seat->seat_number }}, tersedia, tarif {{ $trip->formatted_price }}"
+                                                        aria-pressed="false"
+                                                        class="seat-picker-btn cursor-pointer w-11 h-11 sm:w-12 sm:h-12 rounded-2xl flex flex-col items-center justify-center font-bold text-xs transition duration-150 focus:outline-none focus:ring-2 focus:ring-brand-500 select-none bg-white text-slate-800 border-2 border-slate-300 hover:border-brand-500 hover:text-brand-600 hover:shadow-sm">
+                                                    <span class="seat-num-text text-xs font-bold">{{ $seat->seat_number }}</span>
+                                                    <span class="seat-status-text text-[8px] uppercase font-semibold"></span>
+                                                </button>
+                                            @endif
+                                        @endforeach
+                                    </div>
+
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Rear Cabin (Toilet & Exit) -->
+                        <div class="mt-8 pt-4 border-t-2 border-dashed border-slate-300 flex justify-between items-center text-xs text-slate-400 px-1 sm:px-2">
+                            <span class="px-2.5 py-1 sm:px-3 sm:py-1 bg-slate-200 rounded-lg font-semibold text-[11px] sm:text-xs text-slate-600">Toilet Kabin</span>
+                            <span class="font-extrabold uppercase tracking-widest text-[9px] sm:text-[10px]">Bagian Belakang</span>
+                            <span class="px-2.5 py-1 sm:px-3 sm:py-1 bg-slate-200 rounded-lg font-semibold text-[11px] sm:text-xs text-slate-600">Pintu Darurat</span>
+                        </div>
+
+                    </div>
                 </div>
 
             </div>
@@ -349,24 +351,24 @@
 
     <!-- Mobile Sticky Bottom Floating Summary (Responsive) -->
     <div id="mobile-floating-bar"
-         class="fixed bottom-0 inset-x-0 bg-white text-slate-900 border-t border-slate-200 p-4 shadow-2xl z-40 lg:hidden"
+         class="fixed bottom-0 inset-x-0 bg-white text-slate-900 border-t border-slate-200 px-4 py-3 sm:py-4 shadow-2xl z-40 lg:hidden"
          style="display: none;">
-        <div class="flex items-center justify-between gap-4">
-            <div>
-                <div class="text-xs text-slate-500">
+        <div class="flex items-center justify-between gap-3 max-w-7xl mx-auto">
+            <div class="min-w-0 flex-1">
+                <div class="text-xs text-slate-500 truncate">
                     <span id="mobile-seat-count-label">0 Kursi Dipilih: </span>
                     <strong class="text-brand-600 font-bold" id="mobile-seat-list-label">-</strong>
                 </div>
-                <div class="text-lg font-black text-slate-900" id="mobile-total-price-label">Rp 0</div>
+                <div class="text-base sm:text-lg font-black text-slate-900" id="mobile-total-price-label">Rp 0</div>
             </div>
 
-            <div>
+            <div class="shrink-0">
                 <form action="{{ route('booking.checkout', $trip) }}" method="GET" id="mobile-booking-form">
                     <input type="hidden" name="seat_ids" id="mobile-seat-ids-input" value="">
                     <button type="submit"
                             id="mobile-submit-checkout-btn"
                             disabled
-                            class="py-3 px-5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/30 transition">
+                            class="py-3 px-5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/30 transition min-h-[44px] flex items-center justify-center">
                         Lanjutkan
                     </button>
                 </form>

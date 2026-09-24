@@ -4,8 +4,8 @@
 @section('meta_description', 'Masuk ke akun CAN Travel Anda untuk memesan tiket bus dan mengelola e-tiket perjalanan.')
 
 @section('content')
-<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-slate-100">
+<div class="min-h-[80vh] flex items-center justify-center py-8 sm:py-12 px-3.5 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-6 sm:space-y-8 bg-white p-5 sm:p-10 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-100">
         
         <!-- Header with CAN Travel Brand -->
         <div class="text-center">
@@ -17,19 +17,19 @@
         </div>
 
         <!-- Quick 1-Click Test Access -->
-        <div class="bg-brand-50/70 border border-brand-100 rounded-2xl p-4">
+        <div class="bg-brand-50/70 border border-brand-100 rounded-2xl p-3.5 sm:p-4">
             <p class="text-[11px] font-bold text-brand-800 uppercase tracking-wider mb-2 flex items-center">
                 <span class="w-2 h-2 rounded-full bg-brand-500 mr-2 animate-pulse"></span>
                 Akses Cepat Pengujian (1-Click Demo)
             </p>
-            <div class="grid grid-cols-2 gap-2">
-                <button type="button" onclick="fillDemo('admin@pocan.com', 'password')" class="text-left px-3 py-2 rounded-xl bg-white border border-brand-200 hover:border-brand-400 text-xs font-semibold text-slate-700 hover:text-brand-700 transition shadow-sm">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button type="button" onclick="fillDemo('admin@pocan.com', 'password')" class="text-left px-3 py-2.5 rounded-xl bg-white border border-brand-200 hover:border-brand-400 text-xs font-semibold text-slate-700 hover:text-brand-700 transition shadow-sm min-h-[44px]">
                     <div class="font-bold text-brand-600">Admin CAN Travel</div>
-                    <div class="text-[10px] text-slate-500">admin@pocan.com</div>
+                    <div class="text-[10px] text-slate-500 truncate">admin@pocan.com</div>
                 </button>
-                <button type="button" onclick="fillDemo('budi@gmail.com', 'password')" class="text-left px-3 py-2 rounded-xl bg-white border border-brand-200 hover:border-brand-400 text-xs font-semibold text-slate-700 hover:text-brand-700 transition shadow-sm">
+                <button type="button" onclick="fillDemo('budi@gmail.com', 'password')" class="text-left px-3 py-2.5 rounded-xl bg-white border border-brand-200 hover:border-brand-400 text-xs font-semibold text-slate-700 hover:text-brand-700 transition shadow-sm min-h-[44px]">
                     <div class="font-bold text-emerald-600">Customer Budi</div>
-                    <div class="text-[10px] text-slate-500">budi@gmail.com</div>
+                    <div class="text-[10px] text-slate-500 truncate">budi@gmail.com</div>
                 </button>
             </div>
         </div>

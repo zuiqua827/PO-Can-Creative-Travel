@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Bus;
 use App\Models\Route;
 use App\Models\Trip;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 
 class TripController extends Controller
@@ -13,7 +14,17 @@ class TripController extends Controller
     {
         $origin = $request->input('origin');
         $destination = $request->input('destination');
+
         $date = $request->input('date');
+        // Validate date format safely to prevent 500 errors in Carbon parse
+        try {
+            if ($date) {
+                Carbon::parse($date);
+            }
+        } catch (\Exception $e) {
+            $date = null;
+        }
+
         $busType = $request->input('bus_type');
         $timeSlot = $request->input('time_slot'); // morning, afternoon, night
         $sortBy = $request->input('sort', 'departure_asc'); // price_asc, price_desc, departure_asc, departure_desc

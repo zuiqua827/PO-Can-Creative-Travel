@@ -4,8 +4,8 @@
 @section('meta_description', 'Buat akun pelanggan CAN Travel untuk memesan tiket bus online dengan mudah, cepat, dan aman.')
 
 @section('content')
-<div class="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-    <div class="max-w-md w-full space-y-8 bg-white p-8 sm:p-10 rounded-3xl shadow-xl border border-slate-100">
+<div class="min-h-[85vh] flex items-center justify-center py-8 sm:py-12 px-3.5 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-6 sm:space-y-8 bg-white p-5 sm:p-10 rounded-2xl sm:rounded-3xl shadow-xl border border-slate-100">
         
         <!-- Header with Brand Logo -->
         <div class="text-center">

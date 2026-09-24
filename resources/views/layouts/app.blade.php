@@ -55,55 +55,38 @@
         Menuju ke Konten Utama
     </a>
 
-    <!-- Top Announcement Bar -->
-    <aside class="bg-navy-950 text-slate-300 text-xs py-2 px-4 border-b border-navy-900" aria-label="Informasi Layanan">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-2">
-            <div class="flex items-center space-x-2">
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-accent-500/20 text-accent-400 border border-accent-500/30">
-                    Resmi
-                </span>
-                <span>Portal Pemesanan Tiket Bus Online Terpercaya — <strong>CAN Travel</strong></span>
-            </div>
-            <div class="flex items-center space-x-4 text-slate-400 text-[11px] whitespace-nowrap">
-                <span class="whitespace-nowrap">Pusat Bantuan: <strong class="text-white">0812-3456-7890</strong></span>
-                <span class="hidden sm:inline">|</span>
-                <span class="hidden sm:inline">support@cantravel.co.id</span>
-            </div>
-        </div>
-    </aside>
-
     <!-- Main Navigation Header -->
-    <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm" x-data="{ mobileMenuOpen: false }">
+    <header id="main-header" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-sm text-slate-800">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-20 items-center">
+            <div id="header-inner" class="flex justify-between h-20 items-center">
 
                 <!-- CAN Travel Brand Logo -->
-                <div class="flex items-center">
+                <div class="flex items-center space-x-3">
                     <a href="{{ route('home') }}" class="group focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-xl" aria-label="Beranda CAN Travel">
-                        <x-logo size="md" variant="dark" />
+                        <x-logo size="md" variant="dark" id="nav-logo" />
                     </a>
                 </div>
 
                 <!-- Desktop Navigation Links -->
                 <nav class="hidden md:flex items-center space-x-7" aria-label="Navigasi Utama">
                     <a href="{{ route('home') }}"
-                        class="text-sm font-semibold transition-colors {{ request()->routeIs('home') ? 'text-brand-600 font-bold' : 'text-slate-600 hover:text-slate-900' }}">
+                        class="desktop-nav-link text-sm font-semibold transition-colors {{ request()->routeIs('home') ? 'text-brand-600 font-bold active-link' : 'text-slate-600 hover:text-brand-600' }}">
                         Beranda
                     </a>
                     <a href="{{ route('trips.index') }}"
-                        class="text-sm font-semibold transition-colors {{ request()->routeIs('trips.*') ? 'text-brand-600 font-bold' : 'text-slate-600 hover:text-slate-900' }}">
+                        class="desktop-nav-link text-sm font-semibold transition-colors {{ request()->routeIs('trips.*') ? 'text-brand-600 font-bold active-link' : 'text-slate-600 hover:text-brand-600' }}">
                         Jadwal & Tiket
                     </a>
                     <a href="{{ route('home') }}#fleet"
-                        class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+                        class="desktop-nav-link text-sm font-semibold transition-colors text-slate-600 hover:text-brand-600">
                         Armada
                     </a>
                     <a href="{{ route('home') }}#facilities"
-                        class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+                        class="desktop-nav-link text-sm font-semibold transition-colors text-slate-600 hover:text-brand-600">
                         Fasilitas
                     </a>
                     <a href="{{ route('home') }}#faq"
-                        class="text-sm font-semibold text-slate-600 hover:text-slate-900 transition-colors">
+                        class="desktop-nav-link text-sm font-semibold transition-colors text-slate-600 hover:text-brand-600">
                         Bantuan
                     </a>
                 </nav>
@@ -123,27 +106,21 @@
                         @endif
 
                         <!-- Customer Dropdown Menu -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button id="user-menu-btn" @click="open = !open" @click.away="open = false"
-                                class="flex items-center space-x-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 transition focus:outline-none focus:ring-2 focus:ring-brand-500"
-                                :aria-expanded="open" aria-haspopup="true">
+                        <div class="relative">
+                            <button id="user-menu-btn"
+                                class="flex items-center space-x-2.5 p-1.5 pr-3 rounded-2xl border border-slate-200 hover:border-slate-300 bg-white hover:bg-slate-50 text-slate-800 transition focus:outline-none focus:ring-2 focus:ring-brand-500"
+                                aria-expanded="false" aria-haspopup="true">
                                 <div class="w-8 h-8 rounded-xl bg-brand-100 text-brand-700 font-bold flex items-center justify-center text-xs shadow-inner">
                                     {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
                                 </div>
-                                <span class="text-sm font-bold text-slate-800 max-w-[130px] truncate">{{ auth()->user()->name }}</span>
-                                <svg class="w-4 h-4 text-slate-400 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <span class="text-sm font-bold max-w-[130px] truncate">{{ auth()->user()->name }}</span>
+                                <svg id="user-menu-caret" class="w-4 h-4 text-slate-400 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                                 </svg>
                             </button>
 
-                            <div id="user-menu-dropdown" x-show="open"
-                                 x-transition:enter="transition ease-out duration-150"
-                                 x-transition:enter-start="opacity-0 scale-95"
-                                 x-transition:enter-end="opacity-100 scale-100"
-                                 x-transition:leave="transition ease-in duration-100"
-                                 x-transition:leave-start="opacity-100 scale-100"
-                                 x-transition:leave-end="opacity-0 scale-95"
-                                 class="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 divide-y divide-slate-100"
+                            <div id="user-menu-dropdown"
+                                 class="absolute right-0 mt-2 w-60 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50 divide-y divide-slate-100 text-slate-800"
                                  style="display: none;" role="menu">
                                 <div class="px-4 py-3">
                                     <p class="text-[11px] text-slate-400 uppercase font-bold tracking-wider">Akun Masuk</p>
@@ -178,10 +155,10 @@
                             </div>
                         </div>
                     @else
-                        <a href="{{ route('login') }}" class="text-sm font-bold text-slate-700 hover:text-brand-600 px-3 py-2 transition focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-xl">
+                        <a href="{{ route('login') }}" id="nav-login-btn" class="text-sm font-bold text-slate-700 hover:text-brand-600 px-3 py-2 transition focus:outline-none focus:ring-2 focus:ring-brand-500 rounded-xl">
                             Masuk
                         </a>
-                        <a href="{{ route('register') }}" class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 shadow-md shadow-brand-600/25 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
+                        <a href="{{ route('register') }}" id="nav-register-btn" class="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-600 hover:bg-brand-700 shadow-md shadow-brand-600/25 transition duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500">
                             Daftar Sekarang
                         </a>
                     @endauth
@@ -189,12 +166,12 @@
 
                 <!-- Mobile Menu Button -->
                 <div class="flex items-center md:hidden">
-                    <button id="mobile-nav-toggle" @click="mobileMenuOpen = !mobileMenuOpen"
-                        class="p-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
-                        aria-label="Buka Menu Navigasi" :aria-expanded="mobileMenuOpen">
+                    <button id="mobile-nav-toggle"
+                        class="p-2.5 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors"
+                        aria-label="Buka Menu Navigasi" aria-controls="mobile-nav-menu" aria-expanded="false">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path x-show="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                            <path x-show="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" style="display: none;"/>
+                            <path id="mobile-icon-bars" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                            <path id="mobile-icon-close" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" style="display: none;"/>
                         </svg>
                     </button>
                 </div>
@@ -202,11 +179,8 @@
         </div>
 
         <!-- Mobile Navigation Menu -->
-        <div id="mobile-nav-menu" x-show="mobileMenuOpen"
-             x-transition:enter="transition ease-out duration-150"
-             x-transition:enter-start="opacity-0 -translate-y-2"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             class="md:hidden border-t border-slate-200 bg-white px-5 pt-4 pb-6 space-y-3"
+        <div id="mobile-nav-menu"
+             class="md:hidden border-t border-slate-200 bg-white px-5 pt-4 pb-6 space-y-3 shadow-lg z-50 relative"
              style="display: none;">
             <a href="{{ route('home') }}" class="block text-base font-bold py-2 text-slate-800 hover:text-brand-600">Beranda</a>
             <a href="{{ route('trips.index') }}" class="block text-base font-bold py-2 text-slate-800 hover:text-brand-600">Jadwal & Tiket</a>
@@ -250,6 +224,7 @@
     </header>
 
     <!-- Global Flash Notification Messages -->
+    @if(session('success') || session('error') || session('info'))
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full" aria-live="polite">
         @if(session('success'))
             <div class="rounded-2xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 flex items-start space-x-3 shadow-sm mb-4" x-data="{ show: true }" x-show="show">
@@ -281,6 +256,7 @@
             </div>
         @endif
     </div>
+    @endif
 
     <!-- Main Content -->
     <main class="flex-1" id="main-content">
@@ -290,7 +266,7 @@
     <!-- Professional Footer -->
     <footer class="bg-navy-900 text-slate-300 pt-16 pb-12 border-t border-navy-800 mt-20" aria-label="Footer Resmi CAN Travel">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-navy-800">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 pb-12 border-b border-navy-800">
 
                 <!-- Brand Info -->
                 <div class="space-y-4">
@@ -364,32 +340,90 @@
         // Resilient mobile menu handler
         const mobileToggle = document.getElementById('mobile-nav-toggle');
         const mobileMenu = document.getElementById('mobile-nav-menu');
+        const iconBars = document.getElementById('mobile-icon-bars');
+        const iconClose = document.getElementById('mobile-icon-close');
+
+        function openMobileMenu() {
+            if (!mobileMenu || !mobileToggle) return;
+            mobileMenu.style.display = 'block';
+            mobileToggle.setAttribute('aria-expanded', 'true');
+            mobileToggle.setAttribute('aria-label', 'Tutup Menu Navigasi');
+            if (iconBars) iconBars.style.display = 'none';
+            if (iconClose) iconClose.style.display = 'block';
+        }
+
+        function closeMobileMenu() {
+            if (!mobileMenu || !mobileToggle) return;
+            mobileMenu.style.display = 'none';
+            mobileToggle.setAttribute('aria-expanded', 'false');
+            mobileToggle.setAttribute('aria-label', 'Buka Menu Navigasi');
+            if (iconBars) iconBars.style.display = 'block';
+            if (iconClose) iconClose.style.display = 'none';
+        }
+
         if (mobileToggle && mobileMenu) {
             mobileToggle.addEventListener('click', function(e) {
                 e.stopPropagation();
-                const isHidden = window.getComputedStyle(mobileMenu).display === 'none';
-                mobileMenu.style.display = isHidden ? 'block' : 'none';
-                mobileToggle.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+                const isOpen = mobileToggle.getAttribute('aria-expanded') === 'true';
+                if (isOpen) {
+                    closeMobileMenu();
+                } else {
+                    openMobileMenu();
+                }
+            });
+
+            // Close on any navigation link click inside mobile menu
+            mobileMenu.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    closeMobileMenu();
+                });
+            });
+
+            // Close when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!mobileMenu.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    closeMobileMenu();
+                }
             });
         }
 
         // Resilient user dropdown menu handler
         const userBtn = document.getElementById('user-menu-btn');
         const userDropdown = document.getElementById('user-menu-dropdown');
+        const userCaret = document.getElementById('user-menu-caret');
+
+        function closeUserDropdown() {
+            if (userDropdown && userBtn) {
+                userDropdown.style.display = 'none';
+                userBtn.setAttribute('aria-expanded', 'false');
+                if (userCaret) userCaret.classList.remove('rotate-180');
+            }
+        }
+
         if (userBtn && userDropdown) {
             userBtn.addEventListener('click', function(e) {
                 e.stopPropagation();
                 const isHidden = window.getComputedStyle(userDropdown).display === 'none';
                 userDropdown.style.display = isHidden ? 'block' : 'none';
                 userBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+                if (userCaret) userCaret.classList.toggle('rotate-180', isHidden);
             });
             document.addEventListener('click', function(e) {
                 if (!userDropdown.contains(e.target) && !userBtn.contains(e.target)) {
-                    userDropdown.style.display = 'none';
-                    userBtn.setAttribute('aria-expanded', 'false');
+                    closeUserDropdown();
                 }
             });
         }
+
+        // Global ESC key closes both mobile menu and user dropdown
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeMobileMenu();
+                closeUserDropdown();
+            }
+        });
+
+
     });
     </script>
     @stack('scripts')

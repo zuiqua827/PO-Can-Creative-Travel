@@ -120,7 +120,7 @@
     <!-- Main Admin Body -->
     <div class="flex-1 flex flex-col min-w-0">
         <!-- Admin Top Navigation Bar -->
-        <header class="h-20 bg-white border-b border-slate-200 px-6 sm:px-8 flex items-center justify-between shadow-sm sticky top-0 z-30">
+        <header class="h-20 bg-white border-b border-slate-200 px-4 sm:px-8 flex items-center justify-between shadow-sm sticky top-0 z-30">
             <div class="flex items-center">
                 <button id="admin-sidebar-open" @click="sidebarOpen = true" class="text-slate-600 hover:text-slate-900 md:hidden mr-4" aria-label="Buka Menu Sidebar">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -151,7 +151,7 @@
         </header>
 
         <!-- Flash Messages -->
-        <div class="px-6 sm:px-8 pt-4">
+        <div class="px-4 sm:px-8 pt-4">
             @if(session('success'))
                 <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-4 text-emerald-800 text-sm font-medium mb-4 flex items-center justify-between shadow-sm">
                     <span>{{ session('success') }}</span>
@@ -168,7 +168,7 @@
         </div>
 
         <!-- Content Area -->
-        <main class="flex-1 p-6 sm:p-8" id="main-content">
+        <main class="flex-1 p-3.5 sm:p-6 lg:p-8" id="main-content">
             @yield('content')
         </main>
     </div>

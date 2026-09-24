@@ -8,23 +8,24 @@
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Multi-Step Progress Tracker (Task 13) -->
-        <nav aria-label="Progress Pemesanan" class="mb-8">
-            <ol class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-bold">
-                <li class="p-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center space-x-2">
-                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
-                    <span>01. Pilih Jadwal</span>
+        <!-- Multi-Step Progress Tracker (Task 13) -->
+        <nav aria-label="Progress Pemesanan" class="mb-6 sm:mb-8">
+            <ol class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-[10px] sm:text-xs font-bold">
+                <li class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center space-x-1.5 sm:space-x-2">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] sm:text-[10px] shrink-0">✓</span>
+                    <span class="truncate">01. Pilih Jadwal</span>
                 </li>
-                <li class="p-3 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center space-x-2">
-                    <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[10px]">✓</span>
-                    <span>02. Pilih Kursi</span>
+                <li class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center space-x-1.5 sm:space-x-2">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[9px] sm:text-[10px] shrink-0">✓</span>
+                    <span class="truncate">02. Pilih Kursi</span>
                 </li>
-                <li class="p-3 rounded-2xl bg-brand-600 text-white shadow-md shadow-brand-600/25 flex items-center justify-center space-x-2" aria-current="step">
-                    <span class="w-5 h-5 rounded-full bg-white text-brand-600 flex items-center justify-center text-[10px]">03</span>
-                    <span>03. Data Penumpang</span>
+                <li class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-brand-600 text-white shadow-md shadow-brand-600/25 flex items-center justify-center space-x-1.5 sm:space-x-2" aria-current="step">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white text-brand-600 flex items-center justify-center text-[9px] sm:text-[10px] shrink-0">03</span>
+                    <span class="truncate">03. Data Penumpang</span>
                 </li>
-                <li class="p-3 rounded-2xl bg-white text-slate-400 border border-slate-200 flex items-center justify-center space-x-2">
-                    <span class="w-5 h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[10px]">04</span>
-                    <span>04. Pembayaran</span>
+                <li class="p-2 sm:p-3 rounded-xl sm:rounded-2xl bg-white text-slate-400 border border-slate-200 flex items-center justify-center space-x-1.5 sm:space-x-2">
+                    <span class="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center text-[9px] sm:text-[10px] shrink-0">04</span>
+                    <span class="truncate">04. Pembayaran</span>
                 </li>
             </ol>
         </nav>
