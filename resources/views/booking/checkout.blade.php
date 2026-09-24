@@ -106,36 +106,40 @@
 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                        <label for="passenger-name-{{ $seat->id }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                             Nama Lengkap Penumpang <span class="text-rose-500">*</span>
                                         </label>
-                                        <input type="text" name="passengers[{{ $seat->id }}][name]" required
+                                        <input type="text" id="passenger-name-{{ $seat->id }}" name="passengers[{{ $seat->id }}][name]" required
                                             value="{{ old("passengers.{$seat->id}.name", $index === 0 ? auth()->user()->name : '') }}"
-                                            class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                                            aria-invalid="{{ $errors->has("passengers.{$seat->id}.name") ? 'true' : 'false' }}"
+                                            @if($errors->has("passengers.{$seat->id}.name")) aria-describedby="passenger-name-err-{{ $seat->id }}" @endif
+                                            class="w-full px-4 py-3 rounded-xl border {{ $errors->has("passengers.{$seat->id}.name") ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300' }} text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
                                             placeholder="Sesuai KTP / SIM / Paspor">
                                         @error("passengers.{$seat->id}.name")
-                                            <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                                            <p id="passenger-name-err-{{ $seat->id }}" class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
                                         @enderror
                                     </div>
 
                                     <div>
-                                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                        <label for="passenger-phone-{{ $seat->id }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                             Nomor WhatsApp / HP <span class="text-rose-500">*</span>
                                         </label>
-                                        <input type="tel" name="passengers[{{ $seat->id }}][phone]" required
+                                        <input type="tel" id="passenger-phone-{{ $seat->id }}" name="passengers[{{ $seat->id }}][phone]" required
                                             value="{{ old("passengers.{$seat->id}.phone", $index === 0 ? auth()->user()->phone : '') }}"
-                                            class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
+                                            aria-invalid="{{ $errors->has("passengers.{$seat->id}.phone") ? 'true' : 'false' }}"
+                                            @if($errors->has("passengers.{$seat->id}.phone")) aria-describedby="passenger-phone-err-{{ $seat->id }}" @endif
+                                            class="w-full px-4 py-3 rounded-xl border {{ $errors->has("passengers.{$seat->id}.phone") ? 'border-rose-500 ring-1 ring-rose-500' : 'border-slate-300' }} text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
                                             placeholder="Contoh: 081234567890">
                                         @error("passengers.{$seat->id}.phone")
-                                            <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                                            <p id="passenger-phone-err-{{ $seat->id }}" class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
                                         @enderror
                                     </div>
 
                                     <div class="sm:col-span-2">
-                                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                                        <label for="passenger-id-{{ $seat->id }}" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                                             Nomor NIK / KTP / Paspor <span class="text-slate-400 font-normal">(Opsional)</span>
                                         </label>
-                                        <input type="text" name="passengers[{{ $seat->id }}][id_number]"
+                                        <input type="text" id="passenger-id-{{ $seat->id }}" name="passengers[{{ $seat->id }}][id_number]"
                                             value="{{ old("passengers.{$seat->id}.id_number") }}"
                                             class="w-full px-4 py-3 rounded-xl border border-slate-300 text-sm font-semibold focus:ring-2 focus:ring-brand-500 focus:outline-none"
                                             placeholder="Nomor identitas untuk verifikasi boarding">

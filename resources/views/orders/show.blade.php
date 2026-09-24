@@ -182,9 +182,23 @@
                     <x-logo size="md" variant="light" />
                 </div>
 
-                <div class="text-left sm:text-right">
+                <div class="text-left sm:text-right" x-data="{ copied: false }">
                     <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Kode Pemesanan Tiket</span>
-                    <span class="text-lg font-mono font-black text-amber-400">{{ $order->order_code }}</span>
+                    <div class="flex items-center space-x-2 mt-0.5 sm:justify-end">
+                        <span class="text-lg font-mono font-black text-amber-400" id="order-code-text">{{ $order->order_code }}</span>
+                        <button type="button"
+                                @click="navigator.clipboard.writeText('{{ $order->order_code }}'); copied = true; setTimeout(() => copied = false, 2000)"
+                                class="no-print p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-slate-300 hover:text-white transition focus:outline-none focus:ring-2 focus:ring-amber-400"
+                                :title="copied ? 'Tersalin!' : 'Salin Kode Order'"
+                                aria-label="Salin Kode Pesanan">
+                            <svg x-show="!copied" class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <svg x-show="copied" x-cloak class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
 

@@ -132,7 +132,8 @@
                     Perbarui Status Pesanan
                 </h3>
 
-                <form action="{{ route('admin.orders.update', $order) }}" method="POST" class="space-y-4">
+                <form action="{{ route('admin.orders.update', $order) }}" method="POST" class="space-y-4"
+                      onsubmit="const st = this.elements['status'].value; if(st === 'cancelled') { return confirm('Perhatian: Mengubah status pesanan menjadi Cancelled akan membatalkan tiket dan melepaskan kursi. Lanjutkan?'); } return true;">
                     @csrf
                     @method('PUT')
 

@@ -134,6 +134,38 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Recent Orders Activity Card -->
+                <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm">
+                    <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+                        <h3 class="text-sm font-bold text-slate-800">Pesanan Terakhir</h3>
+                        <a href="{{ route('orders.index') }}" class="text-xs font-bold text-brand-600 hover:text-brand-700">Semua &rarr;</a>
+                    </div>
+                    @if(isset($recentOrders) && $recentOrders->count() > 0)
+                        <div class="space-y-3">
+                            @foreach($recentOrders as $recentOrder)
+                                <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 text-xs hover:border-slate-200 transition">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="font-mono font-bold text-slate-800 text-[11px]">{{ $recentOrder->order_code }}</span>
+                                        <x-status-badge :status="$recentOrder->status" type="order" class="text-[10px] py-0.5 px-2" />
+                                    </div>
+                                    <p class="font-semibold text-slate-700 truncate">
+                                        {{ $recentOrder->trip->route->origin }} → {{ $recentOrder->trip->route->destination }}
+                                    </p>
+                                    <div class="flex justify-between items-center mt-2 pt-2 border-t border-slate-200/60 text-[11px]">
+                                        <span class="text-slate-400">{{ $recentOrder->trip->departure_at->format('d M Y, H:i') }}</span>
+                                        <a href="{{ route('orders.show', $recentOrder) }}" class="font-bold text-brand-600 hover:underline">Detail</a>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="text-center py-6 text-slate-400 text-xs">
+                            <p>Belum ada riwayat pesanan.</p>
+                            <a href="{{ route('trips.index') }}" class="mt-2 inline-block font-bold text-brand-600 hover:underline">Pesan tiket pertama Anda</a>
+                        </div>
+                    @endif
+                </div>
             </div>
 
         </div>

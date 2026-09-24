@@ -45,7 +45,7 @@
     <div id="accessibility-announcer" class="sr-only" aria-live="polite" aria-atomic="true" x-text="accessibilityAnnouncement"></div>
 
     <!-- Inline Non-blocking Max Seats Alert Banner -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" x-show="maxSeatWarning" x-cloak x-transition>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8" x-show="maxSeatWarning" x-cloak x-transition id="max-seat-alert-box" style="display: none;">
         <div class="mb-4 p-4 rounded-2xl bg-amber-500/20 border border-amber-400/40 text-amber-200 text-sm font-semibold flex items-center justify-between shadow-lg backdrop-blur-sm" role="alert">
             <div class="flex items-center space-x-3">
                 <svg class="w-5 h-5 text-amber-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
@@ -53,7 +53,7 @@
                 </svg>
                 <span>Maksimal pemesanan adalah 5 kursi per transaksi.</span>
             </div>
-            <button type="button" @click="maxSeatWarning = false" class="text-amber-300 hover:text-white text-xs font-bold px-2 py-1 rounded-lg bg-amber-500/30 transition">
+            <button type="button" @click="maxSeatWarning = false; document.getElementById('max-seat-alert-box').style.display='none'" class="text-amber-300 hover:text-white text-xs font-bold px-2 py-1 rounded-lg bg-amber-500/30 transition">
                 Tutup
             </button>
         </div>
@@ -111,30 +111,30 @@
             <div class="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-sm">
 
                 <!-- Seat Legend (Phase E: 4 Explicit States) -->
-                <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 pb-6 sm:pb-8 border-b border-slate-100 text-xs font-semibold">
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-xl border-2 border-slate-300 bg-white flex items-center justify-center text-xs font-bold text-slate-700 shadow-sm">
+                <div class="flex flex-wrap items-center justify-center gap-2.5 sm:gap-6 pb-6 sm:pb-8 border-b border-slate-100 text-[11px] sm:text-xs font-semibold">
+                    <div class="flex items-center space-x-1.5 sm:space-x-2">
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl border-2 border-slate-300 bg-white flex items-center justify-center text-[10px] sm:text-xs font-bold text-slate-700 shadow-sm">
                             1A
                         </div>
                         <span class="text-slate-600">Tersedia</span>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-xs font-bold shadow-md shadow-brand-600/30">
+                    <div class="flex items-center space-x-1.5 sm:space-x-2">
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-brand-600 text-white flex items-center justify-center text-[10px] sm:text-xs font-bold shadow-md shadow-brand-600/30">
                             ✓
                         </div>
                         <span class="text-slate-800 font-bold">Dipilih</span>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-xl bg-amber-50 border border-amber-300 text-amber-700 flex items-center justify-center text-xs font-bold cursor-not-allowed">
+                    <div class="flex items-center space-x-1.5 sm:space-x-2">
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-amber-50 border border-amber-300 text-amber-700 flex items-center justify-center text-[10px] sm:text-xs font-bold cursor-not-allowed">
                             ⏱
                         </div>
-                        <span class="text-amber-800 font-semibold">Tertahan (Held)</span>
+                        <span class="text-amber-800 font-semibold">Tertahan</span>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <div class="w-8 h-8 rounded-xl bg-slate-200 border border-slate-300 text-slate-400 flex items-center justify-center text-xs font-bold cursor-not-allowed">
+                    <div class="flex items-center space-x-1.5 sm:space-x-2">
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-slate-200 border border-slate-300 text-slate-400 flex items-center justify-center text-[10px] sm:text-xs font-bold cursor-not-allowed">
                             ✕
                         </div>
-                        <span class="text-slate-400 font-medium">Terisi (Booked)</span>
+                        <span class="text-slate-400 font-medium">Terisi</span>
                     </div>
                 </div>
 
@@ -524,7 +524,24 @@
                             if (subEl) subEl.textContent = '';
                         } else {
                             if (selectedList.length >= maxSeats) {
-                                alert('Maksimal pemesanan adalah ' + maxSeats + ' kursi per transaksi.');
+                                var alpineRootEl = document.getElementById('seat-picker-root');
+                                if (window.Alpine && alpineRootEl && alpineRootEl._x_dataStack && alpineRootEl._x_dataStack[0]) {
+                                    alpineRootEl._x_dataStack[0].maxSeatWarning = true;
+                                    setTimeout(function() {
+                                        if (alpineRootEl._x_dataStack && alpineRootEl._x_dataStack[0]) {
+                                            alpineRootEl._x_dataStack[0].maxSeatWarning = false;
+                                        }
+                                    }, 4000);
+                                }
+                                var alertBanner = document.getElementById('max-seat-alert-box');
+                                if (alertBanner) {
+                                    alertBanner.style.display = 'block';
+                                    setTimeout(function() { alertBanner.style.display = 'none'; }, 4000);
+                                }
+                                var announcerEl = document.getElementById('accessibility-announcer');
+                                if (announcerEl) {
+                                    announcerEl.textContent = 'Peringatan: Maksimal pemesanan adalah ' + maxSeats + ' kursi per transaksi.';
+                                }
                                 return;
                             }
                             selectedList.push({ id: id, number: num });

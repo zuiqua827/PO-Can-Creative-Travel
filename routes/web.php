@@ -52,10 +52,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/orders/{order}/payment', [BookingController::class, 'payment'])->name('booking.payment');
     Route::post('/orders/{order}/payment', [BookingController::class, 'processPayment'])->name('booking.processPayment')->middleware('throttle:payment');
 
+    // Dashboard smart navigation alias
+    Route::get('/dashboard', function () {
+        return auth()->user()->isAdmin()
+            ? redirect()->route('admin.dashboard')
+            : redirect()->route('orders.index');
+    })->name('dashboard');
+
     // Orders & E-Tickets
     Route::get('/my-orders', [OrderController::class, 'index'])->name('orders.index');
     Route::get('/my-orders/{order}', [OrderController::class, 'show'])->name('orders.show');
     Route::post('/my-orders/{order}/cancel', [OrderController::class, 'cancel'])->name('orders.cancel');
+
+    // Intuitive Orders path aliases
+    Route::get('/orders', function () {
+        return redirect()->route('orders.index');
+    });
+    Route::get('/orders/{order}', function ($order) {
+        return redirect()->route('orders.show', $order);
+    });
 });
 
 // Admin Management Portal routes

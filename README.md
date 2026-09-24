@@ -493,3 +493,15 @@ Panduan operasional dan kesiapan peluncuran produksi (*production launch*) untuk
 - [x] Proteksi terhadap eksekusi file berbahaya pada unggahan bukti bayar.
 - [x] Token tiket E-Ticket memiliki entropi tinggi anti-enumerasi (UUID 32-karakter).
 - [x] Tidak ada kredensial atau rahasia yang tercatat dalam log audit maupun berkas Git.
+
+---
+
+## 10. Sprint Releases & Audits
+
+- **Sprint 6–9**: Production Hardening, Audit Trail, Request ID, CSP Security, Scheduled Auto-Expiration, Midtrans Gateway Architecture.
+- **Sprint 10 (Current)**: Product Optimization, UI/UX Excellence, Feature Completeness & Production Polish.
+  - Laporan Audit Lengkap: [`docs/sprint-10-audit.md`](docs/sprint-10-audit.md)
+  - Laporan Rilis Akhir: [`docs/sprint-10-final-report.md`](docs/sprint-10-final-report.md)
+  - Hasil Uji Otomatis: 125 tests passed (462 assertions), 0 failures.
+  - QA Browser: Verifikasi lintas platform Desktop (1440px), Tablet (1024px), Mobile (390px, 375px, 320px).
+

@@ -19,6 +19,11 @@
 </head>
 <body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen flex" x-data="{ sidebarOpen: false }">
 
+    <!-- WCAG 2.1 AA Skip to Content Accessible Link -->
+    <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-4 focus:py-2 focus:bg-brand-600 focus:text-white focus:font-bold focus:rounded-xl focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white">
+        Menuju ke Konten Utama
+    </a>
+
     <!-- Mobile Backdrop -->
     <div id="admin-mobile-backdrop"
          x-show="sidebarOpen"
@@ -161,7 +166,7 @@
         </div>
 
         <!-- Content Area -->
-        <main class="flex-1 p-6 sm:p-8">
+        <main class="flex-1 p-6 sm:p-8" id="main-content">
             @yield('content')
         </main>
     </div>
