@@ -633,59 +633,66 @@
     </div>
 </section>
 
-<!-- Partner & Kolaborasi Section -->
-<section class="py-14 bg-white border-t border-slate-200">
+<!-- Partner & Pembayaran Section -->
+<section class="py-12 sm:py-16 bg-white border-t border-slate-200/80 overflow-hidden">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="text-center max-w-2xl mx-auto mb-10">
-            <span class="text-brand-600 font-extrabold text-xs tracking-wider uppercase">Jejaring Ekosistem</span>
-            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1">Partner & Kolaborasi</h2>
-            <p class="text-slate-600 text-xs sm:text-sm mt-2">CAN Travel berkolaborasi bersama mitra strategis untuk menghadirkan standar mutu perjalanan, infrastruktur digital terpercaya, dan keamanan berkendara yang konsisten.</p>
+        <div class="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
+            <span class="text-brand-600 font-extrabold text-xs sm:text-sm tracking-wider uppercase">PARTNER & PEMBAYARAN</span>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1.5">Partner yang Mendukung Perjalanan Anda</h2>
+            <p class="text-slate-600 text-xs sm:text-sm mt-2 leading-relaxed">Didukung oleh berbagai partner pembayaran dan ekosistem terpercaya untuk memberikan pengalaman pemesanan tiket yang nyaman.</p>
         </div>
+    </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            <!-- 1. Mitra Transportasi -->
-            <div class="group p-5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
-                <div class="w-12 h-12 rounded-xl bg-slate-200/80 group-hover:bg-brand-50 text-slate-400 group-hover:text-brand-600 flex items-center justify-center mb-3 transition-all duration-300 filter grayscale group-hover:grayscale-0 group-hover:scale-105">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                    </svg>
-                </div>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-700 group-hover:text-brand-700 transition-colors">Mitra Transportasi</h3>
-                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Koordinasi rute terminal & kelaikan armada antarkota.</p>
+    @php
+        $partners = [
+            ['name' => 'BNI', 'file' => 'bni.png'],
+            ['name' => 'BRI', 'file' => 'bri.png'],
+            ['name' => 'BCA', 'file' => 'bca.png'],
+            ['name' => 'DANA', 'file' => 'dana.png'],
+            ['name' => 'OVO', 'file' => 'ovo.png'],
+            ['name' => 'GoPay', 'file' => 'gopay.png'],
+            ['name' => 'ShopeePay', 'file' => 'shopeepay.png'],
+        ];
+    @endphp
+
+    <div class="partner-marquee-container relative w-full overflow-hidden select-none">
+        <!-- Subtle edge gradient masks for refined fading on left and right -->
+        <div class="pointer-events-none absolute inset-y-0 left-0 w-12 sm:w-24 z-10 bg-gradient-to-r from-white via-white/80 to-transparent"></div>
+        <div class="pointer-events-none absolute inset-y-0 right-0 w-12 sm:w-24 z-10 bg-gradient-to-l from-white via-white/80 to-transparent"></div>
+
+        <div class="partner-marquee-track">
+            <!-- First group: 2 sets of logos -->
+            <div class="flex items-center shrink-0">
+                @for ($i = 0; $i < 2; $i++)
+                    @foreach ($partners as $partner)
+                        <div class="flex items-center justify-center shrink-0 px-6 sm:px-8 md:px-10 h-14 sm:h-16 transition-transform duration-300 hover:scale-105">
+                            <img 
+                                src="{{ asset('images/' . $partner['file']) }}" 
+                                alt="{{ $partner['name'] }}" 
+                                class="h-8 sm:h-9 md:h-10 max-w-[110px] sm:max-w-[130px] md:max-w-[140px] w-auto object-contain select-none"
+                                loading="lazy"
+                                draggable="false"
+                            >
+                        </div>
+                    @endforeach
+                @endfor
             </div>
 
-            <!-- 2. Partner Teknologi -->
-            <div class="group p-5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
-                <div class="w-12 h-12 rounded-xl bg-slate-200/80 group-hover:bg-brand-50 text-slate-400 group-hover:text-brand-600 flex items-center justify-center mb-3 transition-all duration-300 filter grayscale group-hover:grayscale-0 group-hover:scale-105">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
-                    </svg>
-                </div>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-700 group-hover:text-brand-700 transition-colors">Partner Teknologi</h3>
-                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Sistem tiket terenkripsi & ketersediaan server cloud 24/7.</p>
-            </div>
-
-            <!-- 3. Partner Pembayaran -->
-            <div class="group p-5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
-                <div class="w-12 h-12 rounded-xl bg-slate-200/80 group-hover:bg-brand-50 text-slate-400 group-hover:text-brand-600 flex items-center justify-center mb-3 transition-all duration-300 filter grayscale group-hover:grayscale-0 group-hover:scale-105">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
-                    </svg>
-                </div>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-700 group-hover:text-brand-700 transition-colors">Partner Pembayaran</h3>
-                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Jaringan gerbang transaksi resmi & rekonsiliasi instan.</p>
-            </div>
-
-            <!-- 4. Mitra Perjalanan -->
-            <div class="group p-5 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-white hover:border-brand-300 hover:shadow-md transition-all duration-300 flex flex-col items-center text-center">
-                <div class="w-12 h-12 rounded-xl bg-slate-200/80 group-hover:bg-brand-50 text-slate-400 group-hover:text-brand-600 flex items-center justify-center mb-3 transition-all duration-300 filter grayscale group-hover:grayscale-0 group-hover:scale-105">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    </svg>
-                </div>
-                <h3 class="text-xs sm:text-sm font-bold text-slate-700 group-hover:text-brand-700 transition-colors">Mitra Perjalanan</h3>
-                <p class="text-[11px] text-slate-500 mt-1 leading-relaxed">Jejaring rest area transit rute Trans Jawa & titik temu penumpang.</p>
+            <!-- Second group (duplicate for seamless loop): 2 sets of logos -->
+            <div class="flex items-center shrink-0" aria-hidden="true">
+                @for ($i = 0; $i < 2; $i++)
+                    @foreach ($partners as $partner)
+                        <div class="flex items-center justify-center shrink-0 px-6 sm:px-8 md:px-10 h-14 sm:h-16 transition-transform duration-300 hover:scale-105">
+                            <img 
+                                src="{{ asset('images/' . $partner['file']) }}" 
+                                alt="{{ $partner['name'] }}" 
+                                class="h-8 sm:h-9 md:h-10 max-w-[110px] sm:max-w-[130px] md:max-w-[140px] w-auto object-contain select-none"
+                                loading="lazy"
+                                draggable="false"
+                            >
+                        </div>
+                    @endforeach
+                @endfor
             </div>
         </div>
     </div>

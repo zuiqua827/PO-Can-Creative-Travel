@@ -58,3 +58,52 @@
 .faq-btn[aria-expanded="false"] .faq-icon-minus {
   display: none !important;
 }
+
+/* Partner & Pembayaran Seamless Marquee */
+.partner-marquee-container {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 0.75rem 0;
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+.partner-marquee-track {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  animation: partnerMarquee 38s linear infinite;
+  will-change: transform;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .partner-marquee-container:hover .partner-marquee-track {
+    animation-play-state: paused;
+  }
+}
+
+@keyframes partnerMarquee {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partner-marquee-container {
+    -webkit-mask-image: none;
+    mask-image: none;
+    overflow-x: auto;
+  }
+  .partner-marquee-track {
+    animation: none !important;
+    transform: none !important;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
+}

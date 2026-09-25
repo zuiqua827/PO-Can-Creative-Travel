@@ -100,7 +100,7 @@ class Sprint14EnhancementTest extends TestCase
     }
 
     /**
-     * 3. Partner & Kolaborasi section is located under CTA and uses generic partner labels.
+     * 3. Partner & Pembayaran section is located under CTA and renders partner logos.
      */
     public function test_partner_and_kolaborasi_section_uses_generic_partner_labels(): void
     {
@@ -109,23 +109,26 @@ class Sprint14EnhancementTest extends TestCase
 
         $content = $response->getContent();
 
-        // Heading
-        $this->assertStringContainsString('Partner & Kolaborasi', $content);
-        $this->assertStringContainsString('Jejaring Ekosistem', $content);
+        // Heading & Label
+        $this->assertStringContainsString('PARTNER & PEMBAYARAN', $content);
+        $this->assertStringContainsString('Partner yang Mendukung Perjalanan Anda', $content);
 
-        // Generic labels
-        $this->assertStringContainsString('Mitra Transportasi', $content);
-        $this->assertStringContainsString('Partner Teknologi', $content);
-        $this->assertStringContainsString('Partner Pembayaran', $content);
-        $this->assertStringContainsString('Mitra Perjalanan', $content);
+        // Partner logos
+        $this->assertStringContainsString('images/bni.png', $content);
+        $this->assertStringContainsString('images/bri.png', $content);
+        $this->assertStringContainsString('images/bca.png', $content);
+        $this->assertStringContainsString('images/dana.png', $content);
+        $this->assertStringContainsString('images/ovo.png', $content);
+        $this->assertStringContainsString('images/gopay.png', $content);
+        $this->assertStringContainsString('images/shopeepay.png', $content);
 
         // Ensure CTA appears before Partner section
         $ctaPos = strpos($content, 'Siap Melakukan Perjalanan Nyaman?');
-        $partnerPos = strpos($content, 'Partner & Kolaborasi');
+        $partnerPos = strpos($content, 'Partner yang Mendukung Perjalanan Anda');
 
         $this->assertNotFalse($ctaPos);
         $this->assertNotFalse($partnerPos);
-        $this->assertGreaterThan($ctaPos, $partnerPos, 'Partner & Kolaborasi section should be positioned after the CTA section.');
+        $this->assertGreaterThan($ctaPos, $partnerPos, 'Partner & Pembayaran section should be positioned after the CTA section.');
     }
 
     /**
